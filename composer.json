@@ -1,58 +1,61 @@
 {
-  "name": "roadrunner/http-bundle",
-  "type": "symfony-bundle",
-  "description": "Integration roadrunner http with symfony",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Vlad Shashkov",
-      "email": "shashkov.root@gmail.com"
-    }
-  ],
-  "keywords": [
-    "http",
-    "roadrunner",
-    "symfony",
-    "bundle"
-  ],
-  "autoload": {
-    "psr-4": {
-      "Roadrunner\\Integration\\Symfony\\Http\\": "src/"
+    "name": "roadrunner/http-bundle",
+    "type": "symfony-bundle",
+    "description": "Integration roadrunner http with symfony",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vlad Shashkov",
+            "email": "shashkov.root@gmail.com"
+        }
+    ],
+    "keywords": [
+        "http",
+        "roadrunner",
+        "symfony",
+        "bundle"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Roadrunner\\Integration\\Symfony\\Http\\": "src/"
+        },
+        "files": [
+            "src/DependencyInjection/function.php"
+        ]
     },
-    "files": [
-      "src/DependencyInjection/function.php"
-    ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Roadrunner\\Integration\\Symfony\\Http\\Test\\": "tests/"
+    "autoload-dev": {
+        "psr-4": {
+            "Roadrunner\\Integration\\Symfony\\Http\\Test\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "symfony/dependency-injection": "^6.0|^7.0",
+        "symfony/http-kernel": "^6.0|^7.0",
+        "symfony/runtime": "^6.0|^7.0",
+        "spiral/roadrunner-http": "^v3.6"
+    },
+    "require-dev": {
+        "doctrine/orm": "^2.15",
+        "doctrine/doctrine-bundle": "^2.10",
+        "phpstan/phpstan": "^2.0",
+        "friendsofphp/php-cs-fixer": "3.65.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-symfony": "^2.0",
+        "sentry/sentry-symfony": "^4.10",
+        "nyholm/symfony-bundle-test": "^3.0",
+        "phpunit/phpunit": "^10.3",
+        "symfony/monolog-bundle": "^3.8",
+        "symfony/web-profiler-bundle": "^6.0|^7.0",
+        "codeception/codeception": "^5.3",
+        "codeception/module-phpbrowser": "*",
+        "codeception/module-asserts": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/runtime": true,
+            "phpstan/extension-installer": true,
+            "php-http/discovery": false
+        }
     }
-  },
-  "require": {
-    "php": "^8.1",
-    "symfony/dependency-injection": "^6.0|^7.0",
-    "symfony/http-kernel": "^6.0|^7.0",
-    "symfony/runtime": "^6.0|^7.0",
-    "spiral/roadrunner-http": "^v3"
-  },
-  "require-dev": {
-    "doctrine/orm": "^2.15",
-    "doctrine/doctrine-bundle": "^2.10",
-    "phpstan/phpstan": "^2.0",
-    "friendsofphp/php-cs-fixer": "3.65.0",
-    "phpstan/extension-installer": "^1.4",
-    "phpstan/phpstan-symfony": "^2.0",
-    "sentry/sentry-symfony": "^4.10",
-    "nyholm/symfony-bundle-test": "^3.0",
-    "phpunit/phpunit": "^10.3",
-    "symfony/monolog-bundle": "^3.8",
-    "symfony/web-profiler-bundle": "^6.0|^7.0"
-  },
-  "config": {
-    "allow-plugins": {
-      "symfony/runtime": true,
-      "phpstan/extension-installer": true,
-      "php-http/discovery": false
-    }
-  }
 }

@@ -21,7 +21,7 @@ final class StreamedJsonResponse extends StreamedResponse
             yield from new JsonStream($data, $encodeOptions);
         };
 
-
+        /**@phpstan-ignore-next-line  argument.type*/
         return new self($getLazyContent($data, $encodeOptions), $status, ['Content-Type' => 'application/json']);
     }
 
@@ -32,6 +32,7 @@ final class StreamedJsonResponse extends StreamedResponse
             yield from new JsonStream($data, $encodeOptions);
         };
 
+        /**@phpstan-ignore-next-line  argument.type*/
         return new self($getLazyContent($data, $encodeOptions), $status, ['Content-Type' => 'application/json']);
     }
 }

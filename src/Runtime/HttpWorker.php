@@ -6,6 +6,7 @@ namespace Roadrunner\Integration\Symfony\Http\Runtime;
 
 use JsonException;
 use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse;
+use Spiral\RoadRunner\Http\GlobalState;
 use Spiral\RoadRunner\Http\HttpWorkerInterface as RoadRunnerHttpWorker;
 use Spiral\RoadRunner\Http\Request as RoadRunnerHttpRequest;
 use Symfony\Component\ErrorHandler\ErrorRenderer\ErrorRendererInterface as ErrorRenderer;
@@ -49,7 +50,7 @@ final class HttpWorker
             $request->attributes,
             $request->cookies,
             $this->mapUploadedFiles($request->uploads),
-            $_SERVER = GlobalState::populateServer($request),
+            $_SERVER = GlobalState::enrichServerVars($request),
             $request->body
         );
 
@@ -119,11 +120,22 @@ final class HttpWorker
 
     public function respond(SymfonyResponse $response): void
     {
+        /**
+         * @param array<string, array<int, string|null>>|array<int, string|null> $headers
+         *
+         * @return array<int|string, string[]>
+         */
+        $stringifyHeaders = static function (array $headers): array {
+            return array_map(static function ($headerValues): array {
+                return array_map(static fn($val): string => (string) $val, (array) $headerValues);
+            }, $headers);
+        };
+
         if ($response instanceof BinaryFileResponse) {
             $this->worker->respond(
                 $response->getStatusCode(),
                 $response->getFile()->getContent(),
-                $response->headers->all()
+                $stringifyHeaders($response->headers->all())
             );
 
             return;
@@ -133,7 +145,7 @@ final class HttpWorker
             $this->worker->respond(
                 $response->getStatusCode(),
                 $response->lazyContent,
-                $response->headers->all()
+                $stringifyHeaders($response->headers->all())
             );
 
             return;
@@ -148,7 +160,7 @@ final class HttpWorker
         $this->worker->respond(
             $response->getStatusCode(),
             $content,
-            $response->headers->all()
+            $stringifyHeaders($response->headers->all())
         );
     }
 }

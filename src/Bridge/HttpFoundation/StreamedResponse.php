@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation;
 
 use Generator;
+use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
 class StreamedResponse extends Response
 {
     /**
-     * @param Generator<string> $lazyContent
+     * @param array<string, array<string>|string>                                   $headers
+     * @param Generator<mixed, scalar|Stringable, mixed, Stringable|scalar|null> $lazyContent
      */
     public function __construct(
         public readonly Generator $lazyContent,

@@ -18,12 +18,10 @@ use Roadrunner\Integration\Symfony\Http\DependencyInjection\Configuration;
 
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\definition;
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\doctrinePingMiddlewareId;
-
-use Roadrunner\Integration\Symfony\Http\DependencyInjection\HttpExtension;
-
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\loggingDoctrineOpenTransactionMiddlewareId;
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\referenceLogger;
 
+use Roadrunner\Integration\Symfony\Http\DependencyInjection\RoadRunnerHttpExtension;
 use Roadrunner\Integration\Symfony\Http\InstalledVersions;
 use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface as CompilerPass;
@@ -74,7 +72,7 @@ final class DoctrineCompilerPass implements CompilerPass
 
         $config['middlewares'] = [...$config['middlewares'], ...$pingMiddlewares];
 
-        $container->setParameter(HttpExtension::CONFIG_NAME, $config);
+        $container->setParameter(RoadRunnerHttpExtension::CONFIG_NAME, $config);
 
 
         if (!InstalledVersions::willBeAvailable('symfony/monolog-bundle', MonologBundle::class, [])) {
@@ -105,6 +103,6 @@ final class DoctrineCompilerPass implements CompilerPass
 
 
         $config['middlewares'] = [...$config['middlewares'], ...$loggingUnclosedMiddlewares];
-        $container->setParameter(HttpExtension::CONFIG_NAME, $config);
+        $container->setParameter(RoadRunnerHttpExtension::CONFIG_NAME, $config);
     }
 }

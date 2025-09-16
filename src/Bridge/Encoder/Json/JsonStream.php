@@ -303,7 +303,7 @@ final class JsonStream implements Iterator
      *
      * @param string $message The error message to add
      *
-     * @throws EncodingException If the encoding should not continue due to the error
+     * @throws RuntimeException If the encoding should not continue due to the error
      */
     private function addError(string $message): void
     {
@@ -317,7 +317,7 @@ final class JsonStream implements Iterator
         $this->stack = [];
         $this->step  = null;
 
-        throw new EncodingException($errorMessage);
+        throw new RuntimeException($errorMessage);
     }
 
     /**

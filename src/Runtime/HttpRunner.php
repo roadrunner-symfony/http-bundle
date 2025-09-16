@@ -36,8 +36,8 @@ final class HttpRunner implements Runner
                 'rr_dummy_request' => true,
                 '_controller'      => RedirectController::class,
                 '_route_params'    => [
-                    'path'             => '/'
-                ]
+                    'path' => '/',
+                ],
             ])
         );
 

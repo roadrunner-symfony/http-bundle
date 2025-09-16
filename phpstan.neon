@@ -6,3 +6,6 @@ parameters:
 
 	scanFiles:
 	    - vendor/symfony/dependency-injection/Loader/Configurator/ContainerConfigurator.php
+
+	excludePaths:
+	    - src/Bridge/Encoder/Json/JsonStream.php

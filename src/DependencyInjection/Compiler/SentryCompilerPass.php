@@ -15,7 +15,7 @@ use Doctrine\ORM\EntityManager;
 use Roadrunner\Integration\Symfony\Http\Bridge\Doctrine\SentryDoctrineOpenTransactionMiddleware;
 use Roadrunner\Integration\Symfony\Http\Bridge\Sentry\SentryScopeMiddleware;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Configuration;
-use Roadrunner\Integration\Symfony\Http\DependencyInjection\HttpExtension;
+use Roadrunner\Integration\Symfony\Http\DependencyInjection\RoadRunnerHttpExtension;
 
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\trackingSentryDoctrineOpenTransactionMiddlewareId;
 
@@ -38,7 +38,7 @@ final class SentryCompilerPass implements CompilerPass
         }
 
         /** @var RawConfiguration $config */
-        $config = $container->getParameter(HttpExtension::CONFIG_NAME);
+        $config = $container->getParameter(RoadRunnerHttpExtension::CONFIG_NAME);
 
         if ($config['useSentryIntegration']) {
             $container->register('roadrunner.http.sentry_scope.middleware', SentryScopeMiddleware::class)
@@ -50,7 +50,7 @@ final class SentryCompilerPass implements CompilerPass
             $config['middlewares'][] = 'roadrunner.http.sentry_scope.middleware';
         }
 
-        $container->setParameter(HttpExtension::CONFIG_NAME, $config);
+        $container->setParameter(RoadRunnerHttpExtension::CONFIG_NAME, $config);
 
 
         if (!InstalledVersions::willBeAvailable('doctrine/doctrine-bundle', EntityManager::class, [])) {
@@ -82,6 +82,6 @@ final class SentryCompilerPass implements CompilerPass
         }
 
         $config['middlewares'] = [...$config['middlewares'], ...$trackingUnclosedMiddlewares];
-        $container->setParameter(HttpExtension::CONFIG_NAME, $config);
+        $container->setParameter(RoadRunnerHttpExtension::CONFIG_NAME, $config);
     }
 }

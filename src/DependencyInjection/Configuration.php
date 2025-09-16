@@ -35,7 +35,7 @@ final class Configuration implements BundleConfiguration
 
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('http');
+        $treeBuilder = new TreeBuilder('road_runner_http');
 
         $sentryValidator = static function (): bool {
             if (!InstalledVersions::willBeAvailable('sentry/sentry-symfony', SentryBundle::class, [])) {

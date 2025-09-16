@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 /**
  * @phpstan-import-type RawConfiguration from Configuration
  */
-final class HttpExtension extends Extension
+final class RoadRunnerHttpExtension extends Extension
 {
     public const CONFIG_NAME = 'roadrunner.http.config';
 

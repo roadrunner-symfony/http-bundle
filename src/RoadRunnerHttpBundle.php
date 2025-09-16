@@ -11,7 +11,7 @@ use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\SentryCompi
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-final class HttpBundle extends Bundle
+final class RoadRunnerHttpBundle extends Bundle
 {
     public function build(ContainerBuilder $container): void
     {
