@@ -58,7 +58,7 @@
         "spiral/roadrunner": "^2025.1",
         "symfony/mime": "^7.3",
         "codeception/module-rest": "^3.4",
-        "spiral/roadrunner-cli": "^2.7",
+        "spiral/roadrunner-cli": "^2",
         "symfony/serializer": "^7.3"
     },
     "config": {
