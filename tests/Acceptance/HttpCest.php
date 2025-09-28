@@ -189,18 +189,19 @@ final class HttpCest
      */
     public function getStreamedJsonResponse(REST $rest, AcceptanceTester $tester): void
     {
-        $client   = HttpClientBuilder::buildDefault();
-        $request  = new Request($rest->_getConfig('url') . '/returnJsonResponse');
+        $client  = HttpClientBuilder::buildDefault();
+        $request = new Request($rest->_getConfig('url') . '/returnJsonResponse');
+
         $response = $client->request($request);
 
         $path = codecept_output_dir(sprintf('streamed-%s.json', ByteString::fromRandom(20)->toString()));
         $file = openFile($path, 'w');
 
-        $bytes = 0;
-
         while (null !== $chunk = $response->getBody()->read()) {
             $file->write($chunk);
         }
+
+        $file->close();
 
         $stream = fopen($path, 'r');
 
@@ -212,7 +213,6 @@ final class HttpCest
             assertTrue(false, $e->getMessage());
         } finally {
             fclose($stream);
-            $file->close();
         }
     }
 }

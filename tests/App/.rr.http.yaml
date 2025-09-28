@@ -12,7 +12,6 @@ http:
     address: '0.0.0.0:8080'
     middleware:
         - gzip
-        - sendfile
     pool:
       debug: ${RR_HTTP_WORKER_DEBUG:-false}
       num_workers: ${RR_HTTP_WORKER_COUNT:-2}
