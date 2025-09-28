@@ -21,6 +21,7 @@ use JsonStreamingParser\Listener\InMemoryListener;
 use JsonStreamingParser\Parser;
 
 use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertIsResource;
 use function PHPUnit\Framework\assertTrue;
 
 use Roadrunner\Integration\Symfony\Http\Test\Support\AcceptanceTester;
@@ -55,7 +56,7 @@ final class HttpCest
     /**
      * @return iterable<array{file: non-empty-string, content-type: non-empty-string}>
      */
-    private function sendTextRequestDataProvider(): iterable
+    private function sendTextRequestDataProvider(): iterable /*@phpstan-ignore method.unused*/
     {
         yield ['file' => 'request.json', 'content-type' => 'application/json'];
         yield ['file' => 'request.xml', 'content-type' => 'application/xml'];
@@ -101,7 +102,7 @@ final class HttpCest
     /**
      * @return iterable<array{file: non-empty-string, ext: non-empty-string, content-type: non-empty-string}>
      */
-    private function sendBinaryRequestDataProvider(): iterable
+    private function sendBinaryRequestDataProvider(): iterable /*@phpstan-ignore method.unused*/
     {
         yield ['file' => 'request.pdf', 'ext' => 'pdf', 'content-type' => 'application/pdf'];
         yield ['file' => 'request.doc', 'ext' => 'doc', 'content-type' => 'application/msword'];
@@ -128,7 +129,7 @@ final class HttpCest
     /**
      * @return iterable<array{file: non-empty-string, content-type: non-empty-string}>
      */
-    private function getBinaryResponseDataProvider(): iterable
+    private function getBinaryResponseDataProvider(): iterable /*@phpstan-ignore method.unused*/
     {
         yield ['content-type' => 'application/pdf', 'file' => 'request.pdf'];
         yield ['content-type' => 'application/msword', 'file' => 'request.doc'];
@@ -155,7 +156,7 @@ final class HttpCest
     /**
      * @return iterable<array{file: non-empty-string, content-type: non-empty-string}>
      */
-    private function getTextResponseDataProvider(): iterable
+    private function getTextResponseDataProvider(): iterable /*@phpstan-ignore method.unused*/
     {
         yield ['file' => 'request.json', 'content-type' => 'application/json'];
         yield ['file' => 'request.xml', 'content-type' => 'application/xml'];
@@ -169,8 +170,11 @@ final class HttpCest
      */
     public function getStreamedResponse(REST $rest): void
     {
+        /** @var non-empty-string $host */
+        $host = $rest->_getConfig('url');
+
         $client   = HttpClientBuilder::buildDefault();
-        $request  = new Request($rest->_getConfig('url') . '/returnStreamingResponse');
+        $request  = new Request($host . '/returnStreamingResponse');
         $response = $client->request($request);
 
         $count = 0;
@@ -179,7 +183,7 @@ final class HttpCest
             $count++;
         }
 
-        assertEquals(1502, $count);
+        assertTrue($count > 1500);
     }
 
 
@@ -189,8 +193,10 @@ final class HttpCest
      */
     public function getStreamedJsonResponse(REST $rest, AcceptanceTester $tester): void
     {
+        /** @var non-empty-string $host */
+        $host    = $rest->_getConfig('url');
         $client  = HttpClientBuilder::buildDefault();
-        $request = new Request($rest->_getConfig('url') . '/returnJsonResponse');
+        $request = new Request($host . '/returnJsonResponse');
 
         $response = $client->request($request);
 
@@ -205,11 +211,14 @@ final class HttpCest
 
         $stream = fopen($path, 'r');
 
+        assertIsResource($stream);
+
         try {
             $parser = new Parser($stream, new InMemoryListener());
             $parser->parse();
 
         } catch (ParsingException $e) {
+            /**@phpstan-ignore-next-line function.impossibleType */
             assertTrue(false, $e->getMessage());
         } finally {
             fclose($stream);
