@@ -26,8 +26,6 @@ use function PHPUnit\Framework\assertTrue;
 use Roadrunner\Integration\Symfony\Http\Test\Support\AcceptanceTester;
 use Symfony\Component\String\ByteString;
 
- // or implement your own listener
-
 final class HttpCest
 {
     /**
