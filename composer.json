@@ -7,7 +7,11 @@
         {
             "name": "Vlad Shashkov",
             "email": "shashkov.root@gmail.com"
-        }
+        },
+      {
+        "name": "RoadRunner Community",
+        "homepage": "https://github.com/roadrunner-symfony/http-bundle/graphs/contributors"
+      }
     ],
     "keywords": [
         "http",
@@ -49,7 +53,13 @@
         "symfony/web-profiler-bundle": "^6.0|^7.0",
         "codeception/codeception": "^5.3",
         "codeception/module-phpbrowser": "*",
-        "codeception/module-asserts": "*"
+        "codeception/module-asserts": "*",
+        "spiral-packages/profiler": "^1.2",
+        "spiral/roadrunner": "^2025.1",
+        "symfony/mime": "^7.3",
+        "codeception/module-rest": "^3.4",
+        "spiral/roadrunner-cli": "^2.7",
+        "symfony/serializer": "^7.3"
     },
     "config": {
         "allow-plugins": {

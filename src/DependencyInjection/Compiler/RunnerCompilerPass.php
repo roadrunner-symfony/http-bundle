@@ -31,7 +31,7 @@ final class RunnerCompilerPass implements CompilerPass
 
         if ($container->hasDefinition($config['logger'])) {
             $factoryArguments = [
-                new Reference($config['logger']),
+                '$logger' => new Reference($config['logger']),
             ];
         }
 

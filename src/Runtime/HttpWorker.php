@@ -16,8 +16,6 @@ use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
-use const UPLOAD_ERR_OK;
-
 /**
  * @phpstan-import-type UploadedFilesList from RoadRunnerHttpRequest
  */
@@ -79,14 +77,8 @@ final class HttpWorker
                 continue;
             }
 
-            $path = '';
-
-            if (UPLOAD_ERR_OK != $file['error']) {
-                $path = $file['tmpName'];
-            }
-
             $result[$index] = new UploadedFile(
-                $path,
+                $file['tmpName'],
                 $file['name'],
                 $file['mime'],
                 $file['error'],

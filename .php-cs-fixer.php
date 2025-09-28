@@ -3,11 +3,8 @@
 declare(strict_types=1);
 
 $finder = (new PhpCsFixer\Finder())
-    ->in(['src', 'config'])
-    ->exclude([
-        'var',
-        'vendor',
-    ])
+    ->in(__DIR__)
+    ->exclude(['var', 'vendor', 'tests/Support/_generated'])
 ;
 
 return (new PhpCsFixer\Config())

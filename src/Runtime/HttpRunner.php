@@ -9,7 +9,7 @@ use Roadrunner\Integration\Symfony\Http\Middleware\PipelineMiddleware;
 use Symfony\Bundle\FrameworkBundle\Controller\RedirectController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\KernelInterface as Kernel;
-use Symfony\Component\HttpKernel\TerminableInterface;
+use Symfony\Component\HttpKernel\TerminableInterface as Terminable;
 use Symfony\Component\Runtime\RunnerInterface as Runner;
 use Throwable;
 
@@ -26,7 +26,7 @@ final class HttpRunner implements Runner
      */
     public function run(): int
     {
-        $isTerminableKernel = $this->kernel instanceof TerminableInterface;
+        $isTerminableKernel = $this->kernel instanceof Terminable;
 
 
         // Initialize routing and other lazy services that Symfony has.
@@ -42,20 +42,18 @@ final class HttpRunner implements Runner
         );
 
 
-        /** @phpstan-ignore while.alwaysTrue */
         while (true) {
             try {
                 $request = $this->worker->waitRequest();
 
                 if ($request === null) {
-                    continue;
+                    break;
                 }
             } catch (Throwable $e) {
                 $this->worker->respondThrowable($e);
 
                 continue;
             }
-
 
             try {
                 $response = $this->pipeline->process($request);
@@ -71,6 +69,7 @@ final class HttpRunner implements Runner
 
             $this->worker->respond($response);
 
+
             if ($isTerminableKernel) {
                 try {
                     /** @phpstan-ignore method.notFound */
@@ -82,5 +81,7 @@ final class HttpRunner implements Runner
 
             $this->kernel->boot();
         }
+
+        return 1;
     }
 }

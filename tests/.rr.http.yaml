@@ -1,0 +1,35 @@
+version: '3'
+rpc:
+    listen: 'tcp://127.0.0.1:6001'
+
+server:
+    command: 'php app.php'
+    env:
+        - APP_RUNTIME: Roadrunner\Integration\Symfony\Http\Runtime\HttpRuntime
+        - APP_ENV: dev
+
+http:
+    address: '0.0.0.0:8080'
+    middleware:
+        - gzip
+    pool:
+      debug: true
+      num_workers: ${RR_HTTP_WORKER_COUNT:-2}
+      supervisor:
+        max_worker_memory: 200
+
+
+logs:
+  mode: ${RR_HTTP_LOG_MODE:-production}
+  channels:
+    rpc:
+      level: info
+      encoding: json
+    http:
+      level: info
+      encoding: json
+    server:
+      level: info
+      encoding: json
+
+

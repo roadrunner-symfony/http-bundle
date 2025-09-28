@@ -1,9 +1,9 @@
-namespace: Tests
+namespace: Roadrunner\Integration\Symfony\Http\Test
 support_namespace: Support
 paths:
     tests: tests
     output: tests/_output
-    data: tests/Support/Data
+    data: tests/_data
     support: tests/Support
     envs: tests/_envs
 actor_suffix: Tester

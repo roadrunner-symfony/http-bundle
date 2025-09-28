@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support;
+namespace Roadrunner\Integration\Symfony\Http\Test\Support;
 
 /**
  * Inherited Methods

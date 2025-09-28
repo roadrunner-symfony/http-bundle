@@ -8,6 +8,7 @@ use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\DoctrineCom
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\PipelineMiddlewareCompilerPass;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\RunnerCompilerPass;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\SentryCompilerPass;
+use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\VarDumperCompilerPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -18,6 +19,7 @@ final class RoadRunnerHttpBundle extends Bundle
         $container->addCompilerPass(new RunnerCompilerPass());
         $container->addCompilerPass(new DoctrineCompilerPass());
         $container->addCompilerPass(new SentryCompilerPass());
+        $container->addCompilerPass(new VarDumperCompilerPass());
         $container->addCompilerPass(new PipelineMiddlewareCompilerPass());
     }
 
