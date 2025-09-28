@@ -4,6 +4,8 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\Constraint\IsEqual;
+use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedJsonResponse;
+use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse;
 use Roadrunner\Integration\Symfony\Http\RoadRunnerHttpBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -17,7 +19,7 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\Routing\Attribute\Route;
 
-require __DIR__ . '/../vendor/autoload_runtime.php';
+require __DIR__ . '/../../vendor/autoload_runtime.php';
 
 /**
  * @noinspection PhpIllegalPsrClassPathInspection
@@ -56,7 +58,7 @@ final class Kernel extends BaseKernel
             return new JsonResponse(['test' => false, 'message' => 'Failed get ext']);
         }
 
-        $expectedContent = @file_get_contents(sprintf(__DIR__ . '/_data/request.%s', $ext));
+        $expectedContent = @file_get_contents(sprintf(__DIR__ . '/../_data/request.%s', $ext));
 
         if ($expectedContent === false) {
             return new JsonResponse(['test' => false, 'message' => 'Failed get expected content']);
@@ -86,7 +88,7 @@ final class Kernel extends BaseKernel
             return new JsonResponse(['test' => false, 'message' => 'Failed get ext']);
         }
 
-        $expectedContent = @file_get_contents(sprintf(__DIR__ . '/_data/request.%s', $ext));
+        $expectedContent = @file_get_contents(sprintf(__DIR__ . '/../_data/request.%s', $ext));
 
         if ($expectedContent === false) {
             return new JsonResponse(['test' => false, 'message' => 'Failed get expected content']);
@@ -109,7 +111,7 @@ final class Kernel extends BaseKernel
             return new JsonResponse(['test' => false, 'message' => 'Failed get ext']);
         }
 
-        return new BinaryFileResponse(sprintf(__DIR__ . '/_data/request.%s', $ext));
+        return new BinaryFileResponse(sprintf(__DIR__ . '/../_data/request.%s', $ext));
     }
 
     #[Route(path: '/returnTextResponse', methods: [Request::METHOD_GET])]
@@ -124,9 +126,54 @@ final class Kernel extends BaseKernel
             return new JsonResponse(['test' => false, 'message' => 'Failed get ext']);
         }
 
-        return new Response(file_get_contents(sprintf(__DIR__ . '/_data/request.%s', $ext)) ?? '', headers: ['Content-Type' => $contentType]);
+        return new Response(file_get_contents(sprintf(__DIR__ . '/../_data/request.%s', $ext)) ?? '', headers: ['Content-Type' => $contentType]);
     }
 
+
+    #[Route(path: '/returnStreamingResponse', methods: [Request::METHOD_GET])]
+    public function returnStreamingResponse(Request $request): Response
+    {
+        return new StreamedResponse(
+            (static function (): \Generator {
+                for ($i = 0; $i < 1500; $i++) {
+                    yield random_int(1, $i + 1) . PHP_EOL;
+                }
+            })()
+        );
+    }
+
+
+
+    #[Route(path: '/returnJsonResponse', methods: [Request::METHOD_GET])]
+    public function returnJsonResponse(Request $request): Response
+    {
+        return StreamedJsonResponse::fromIterable(
+            (static function (): \Generator {
+                for ($i = 0; $i < 1500; $i++) {
+                    if ($i % 2 === 0) {
+                        yield new class('Vlad Shashkov', 27) {
+                            public function __construct(
+                                public string $name,
+                                public int $age,
+                            ) {}
+                        };
+                    }
+
+                    if ($i % 3 === 0) {
+                        yield new class('Spiral', 'RoadRunner') {
+                            public function __construct(
+                                public string $name,
+                                public string $product,
+                            ) {}
+                        };
+                    }
+
+
+                    yield ['generator' => random_int(1, $i + 1)];
+                }
+            })()
+        );
+    }
 }
 
 return static function (array $context): Kernel {

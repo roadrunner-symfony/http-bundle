@@ -6,14 +6,15 @@ server:
     command: 'php app.php'
     env:
         - APP_RUNTIME: Roadrunner\Integration\Symfony\Http\Runtime\HttpRuntime
-        - APP_ENV: dev
+        - APP_ENV: prod
 
 http:
     address: '0.0.0.0:8080'
     middleware:
         - gzip
+        - sendfile
     pool:
-      debug: true
+      debug: ${RR_HTTP_WORKER_DEBUG:-false}
       num_workers: ${RR_HTTP_WORKER_COUNT:-2}
       supervisor:
         max_worker_memory: 200

@@ -4,14 +4,29 @@ declare(strict_types=1);
 
 namespace Roadrunner\Integration\Symfony\Http\Test\Acceptance;
 
+use Amp\ByteStream\StreamException;
+use Amp\File\FilesystemException;
+
+use function Amp\File\openFile;
+
+use Amp\Http\Client\HttpClientBuilder;
+use Amp\Http\Client\HttpException;
+use Amp\Http\Client\Request;
 use Codeception\Attribute\DataProvider;
 use Codeception\Example;
+use Codeception\Module\REST;
 use Exception;
+use JsonStreamingParser\Exception\ParsingException;
+use JsonStreamingParser\Listener\InMemoryListener;
+use JsonStreamingParser\Parser;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertTrue;
 
 use Roadrunner\Integration\Symfony\Http\Test\Support\AcceptanceTester;
+use Symfony\Component\String\ByteString;
+
+ // or implement your own listener
 
 final class HttpCest
 {
@@ -150,5 +165,56 @@ final class HttpCest
     }
 
 
-    public function getStreamingResponse(AcceptanceTester $tester): void {}
+    /**
+     * @throws HttpException
+     * @throws StreamException
+     */
+    public function getStreamedResponse(REST $rest): void
+    {
+        $client   = HttpClientBuilder::buildDefault();
+        $request  = new Request($rest->_getConfig('url') . '/returnStreamingResponse');
+        $response = $client->request($request);
+
+        $count = 0;
+
+        while (null !== $chunk = $response->getBody()->read()) {
+            $count++;
+        }
+
+        assertEquals(1502, $count);
+    }
+
+
+    /**
+     * @throws FilesystemException
+     * @throws HttpException
+     */
+    public function getStreamedJsonResponse(REST $rest, AcceptanceTester $tester): void
+    {
+        $client   = HttpClientBuilder::buildDefault();
+        $request  = new Request($rest->_getConfig('url') . '/returnJsonResponse');
+        $response = $client->request($request);
+
+        $path = codecept_output_dir(sprintf('streamed-%s.json', ByteString::fromRandom(20)->toString()));
+        $file = openFile($path, 'w');
+
+        $bytes = 0;
+
+        while (null !== $chunk = $response->getBody()->read()) {
+            $file->write($chunk);
+        }
+
+        $stream = fopen($path, 'r');
+
+        try {
+            $parser = new Parser($stream, new InMemoryListener());
+            $parser->parse();
+
+        } catch (ParsingException $e) {
+            assertTrue(false, $e->getMessage());
+        } finally {
+            fclose($stream);
+            $file->close();
+        }
+    }
 }

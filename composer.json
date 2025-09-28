@@ -59,7 +59,11 @@
         "symfony/mime": "^7.3",
         "codeception/module-rest": "^3.4",
         "spiral/roadrunner-cli": "^2",
-        "symfony/serializer": "^7.3"
+        "symfony/serializer": "^7.3",
+        "amphp/http-client": "^5.3",
+        "amphp/file": "^3.2",
+        "symfony/string": "^7.3",
+        "salsify/json-streaming-parser": "^8.3"
     },
     "config": {
         "allow-plugins": {
