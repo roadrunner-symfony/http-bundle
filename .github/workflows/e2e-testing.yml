@@ -32,6 +32,14 @@ jobs:
             symfony: '6.4.*'
             rr: '2025.*'
 
+          - php: 8.4
+            symfony: '6.4.*'
+            rr: '2024.*'
+
+          - php: 8.4
+            symfony: '6.4.*'
+            rr: '2025.*'
+
           - php: 8.2
             symfony: '7.0.*'
             rr: '2024.*'
@@ -48,6 +56,14 @@ jobs:
             symfony: '7.0.*'
             rr: '2025.*'
 
+          - php: 8.4
+            symfony: '7.0.*'
+            rr: '2024.*'
+
+          - php: 8.4
+            symfony: '7.0.*'
+            rr: '2025.*'
+
           - php: 8.2
             symfony: '7.1.*'
             rr: '2024.*'
@@ -61,6 +77,14 @@ jobs:
             rr: '2024.*'
 
           - php: 8.3
+            symfony: '7.1.*'
+            rr: '2025.*'
+
+          - php: 8.4
+            symfony: '7.1.*'
+            rr: '2024.*'
+
+          - php: 8.4
             symfony: '7.1.*'
             rr: '2025.*'
 
@@ -77,6 +101,14 @@ jobs:
             rr: '2024.*'
 
           - php: 8.3
+            symfony: '7.2.*'
+            rr: '2025.*'
+
+          - php: 8.4
+            symfony: '7.2.*'
+            rr: '2024.*'
+
+          - php: 8.4
             symfony: '7.2.*'
             rr: '2025.*'
 
@@ -93,6 +125,14 @@ jobs:
             rr: '2024.*'
 
           - php: 8.3
+            symfony: '7.3.*'
+            rr: '2025.*'
+
+          - php: 8.4
+            symfony: '7.3*'
+            rr: '2024.*'
+
+          - php: 8.4
             symfony: '7.3.*'
             rr: '2025.*'
 
