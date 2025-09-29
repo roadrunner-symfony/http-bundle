@@ -3,11 +3,10 @@ on: [ push, pull_request ]
 
 jobs:
   build:
-    runs-on: ${{ matrix.operating-system }}
+    runs-on: ubuntu-latest
     name: PHP ${{ matrix.php }} and Symfony ${{ matrix.symfony }} and RoadRunner ${{ matrix.rr }}
     strategy:
       matrix:
-        operating-system: [ ubuntu-latest ]
         include:
           # Symfony 6.4
           - php: 8.1
