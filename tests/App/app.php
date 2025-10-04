@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedJsonResponse as SymfonyStreamedJsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse as SymfonyStreamedResponse;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\Routing\Attribute\Route;
@@ -131,7 +133,7 @@ final class Kernel extends BaseKernel
 
 
     #[Route(path: '/returnStreamingResponse', methods: [Request::METHOD_GET])]
-    public function returnStreamingResponse(Request $request): Response
+    public function returnStreamingResponse(): Response
     {
         return new StreamedResponse(
             (static function (): \Generator {
@@ -143,11 +145,56 @@ final class Kernel extends BaseKernel
     }
 
 
+    #[Route(path: '/returnOriginalStreamingResponse', methods: [Request::METHOD_GET])]
+    public function returnOriginalStreamingResponse(): Response
+    {
+        return new SymfonyStreamedResponse(
+            (static function (): \Generator {
+                for ($i = 0; $i < 1500; $i++) {
+                    yield random_int(1, $i + 1) . PHP_EOL;
+                }
+            })()
+        );
+    }
+
+
 
     #[Route(path: '/returnJsonResponse', methods: [Request::METHOD_GET])]
-    public function returnJsonResponse(Request $request): Response
+    public function returnJsonResponse(): Response
     {
         return StreamedJsonResponse::fromIterable(
+            (static function (): \Generator {
+                for ($i = 0; $i < 1500; $i++) {
+                    if ($i % 2 === 0) {
+                        yield new class('Vlad Shashkov', 27) {
+                            public function __construct(
+                                public string $name,
+                                public int $age,
+                            ) {}
+                        };
+                    }
+
+                    if ($i % 3 === 0) {
+                        yield new class('Spiral', 'RoadRunner') {
+                            public function __construct(
+                                public string $name,
+                                public string $product,
+                            ) {}
+                        };
+                    }
+
+
+                    yield ['generator' => random_int(1, $i + 1)];
+                }
+            })()
+        );
+    }
+
+
+    #[Route(path: '/returnOriginalJsonResponse', methods: [Request::METHOD_GET])]
+    public function returnOriginalJsonResponse(): Response
+    {
+        return new SymfonyStreamedJsonResponse(
             (static function (): \Generator {
                 for ($i = 0; $i < 1500; $i++) {
                     if ($i % 2 === 0) {

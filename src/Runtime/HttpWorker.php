@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Roadrunner\Integration\Symfony\Http\Runtime;
 
 use JsonException;
+
+use function Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\echoToGenerator;
+
 use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse;
 use Spiral\RoadRunner\Http\GlobalState;
 use Spiral\RoadRunner\Http\HttpWorkerInterface as RoadRunnerHttpWorker;
@@ -14,6 +17,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse as SymfonyStreamedResponse;
 use Throwable;
 
 /**
@@ -132,6 +136,19 @@ final class HttpWorker
 
             return;
         }
+
+
+        // Save BC
+        if ($response instanceof SymfonyStreamedResponse) {
+            $this->worker->respond(
+                $response->getStatusCode(),
+                echoToGenerator($response),
+                $stringifyHeaders($response->headers->all())
+            );
+
+            return;
+        }
+
 
         if ($response instanceof StreamedResponse) {
             $this->worker->respond(

@@ -24,7 +24,8 @@
             "Roadrunner\\Integration\\Symfony\\Http\\": "src/"
         },
         "files": [
-            "src/DependencyInjection/function.php"
+            "src/DependencyInjection/function.php",
+            "src/Bridge/HttpFoundation/function.php"
         ]
     },
     "autoload-dev": {

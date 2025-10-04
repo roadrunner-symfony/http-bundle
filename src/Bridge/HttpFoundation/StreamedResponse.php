@@ -20,6 +20,6 @@ class StreamedResponse extends Response
         array $headers = []
     ) {
 
-        parent::__construct(status: $status, headers: array_merge(['X-Accel-Buffering' => 'no'], $headers));
+        parent::__construct(status: $status, headers: $headers);
     }
 }

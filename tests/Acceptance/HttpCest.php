@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Roadrunner\Integration\Symfony\Http\Test\Acceptance;
 
+use Amp\ByteStream\ClosedException;
 use Amp\ByteStream\StreamException;
 use Amp\File\FilesystemException;
 
@@ -168,18 +169,41 @@ final class HttpCest
      * @throws HttpException
      * @throws StreamException
      */
-    public function getStreamedResponse(REST $rest): void
+    public function getRoadRunnerStreamedResponse(REST $rest): void
+    {
+        $this->getStreamedResponseTest($rest, '/returnStreamingResponse');
+    }
+
+
+    /**
+     * @throws HttpException
+     * @throws StreamException
+     */
+    public function getOriginalStreamedResponse(REST $rest): void
+    {
+        $this->getStreamedResponseTest($rest, '/returnOriginalStreamingResponse');
+    }
+
+
+
+    /**
+     * @param non-empty-string $uri
+     *
+     * @throws HttpException
+     * @throws StreamException
+     */
+    private function getStreamedResponseTest(REST $rest, string $uri): void
     {
         /** @var non-empty-string $host */
         $host = $rest->_getConfig('url');
 
         $client   = HttpClientBuilder::buildDefault();
-        $request  = new Request($host . '/returnStreamingResponse');
+        $request  = new Request($host . $uri);
         $response = $client->request($request);
 
         $count = 0;
 
-        while (null !== $chunk = $response->getBody()->read()) {
+        while (null !== $response->getBody()->read()) {
             $count++;
         }
 
@@ -188,15 +212,43 @@ final class HttpCest
 
 
     /**
+     * @throws ClosedException
      * @throws FilesystemException
      * @throws HttpException
+     * @throws StreamException
      */
-    public function getStreamedJsonResponse(REST $rest, AcceptanceTester $tester): void
+    public function getRoadRunnerStreamedJsonResponse(REST $rest): void
+    {
+        $this->getStreamedJsonResponseTest($rest, '/returnJsonResponse');
+    }
+
+
+    /**
+     * @throws ClosedException
+     * @throws FilesystemException
+     * @throws HttpException
+     * @throws StreamException
+     */
+    public function getOriginalStreamedJsonResponse(REST $rest): void
+    {
+        $this->getStreamedJsonResponseTest($rest, '/returnOriginalJsonResponse');
+    }
+
+
+    /**
+     * @param non-empty-string $uri
+     *
+     * @throws FilesystemException
+     * @throws HttpException
+     * @throws StreamException
+     * @throws ClosedException
+     */
+    private function getStreamedJsonResponseTest(REST $rest, string $uri): void
     {
         /** @var non-empty-string $host */
         $host    = $rest->_getConfig('url');
         $client  = HttpClientBuilder::buildDefault();
-        $request = new Request($host . '/returnJsonResponse');
+        $request = new Request($host . $uri);
 
         $response = $client->request($request);
 
