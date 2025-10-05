@@ -137,7 +137,7 @@ final class Kernel extends BaseKernel
     {
         return new StreamedResponse(
             (static function (): \Generator {
-                for ($i = 0; $i < 1500; $i++) {
+                for ($i = 0; $i < 1550; $i++) {
                     yield random_int(1, $i + 1) . PHP_EOL;
                 }
             })()
@@ -150,7 +150,7 @@ final class Kernel extends BaseKernel
     {
         return new SymfonyStreamedResponse(
             (static function (): \Generator {
-                for ($i = 0; $i < 1500; $i++) {
+                for ($i = 0; $i < 1550; $i++) {
                     yield random_int(1, $i + 1) . PHP_EOL;
                 }
             })()
