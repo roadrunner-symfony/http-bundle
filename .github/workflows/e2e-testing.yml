@@ -146,6 +146,12 @@ jobs:
           tools: flex
           extensions: opcache,zip,intl,pcntl,sockets,protobuf,grpc
 
+      - run: composer config -- github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}
+        name: Register GitHub token for Composer
+
+      - run: composer validate
+        name: test validate
+
       - name: Download dependencies
         env:
           SYMFONY_REQUIRE: ${{ matrix.symfony }}
