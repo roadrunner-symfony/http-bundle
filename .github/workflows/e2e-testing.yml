@@ -152,6 +152,8 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Download RoadRunner ${{ matrix.rr }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run:  ./vendor/bin/dload get --force --no-ansi --no-interaction rr:${{ matrix.rr }}
 
       - name: Run test suite on PHP ${{ matrix.php }} and Symfony ${{ matrix.symfony }} and RoadRunner ${{ matrix.rr }}
