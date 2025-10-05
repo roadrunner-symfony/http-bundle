@@ -207,6 +207,9 @@ final class HttpCest
             $count++;
         }
 
+
+        echo $count;
+
         assertTrue($count > 1500);
     }
 
