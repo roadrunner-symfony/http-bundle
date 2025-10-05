@@ -151,7 +151,7 @@ jobs:
           SYMFONY_REQUIRE: ${{ matrix.symfony }}
         uses: ramsey/composer-install@v3
         with:
-          dependency-versions: "lowest"
+          custom-cache-suffix: $(/bin/date -u --date='last Mon' "+%F")
 
       - name: Download RoadRunner ${{ matrix.rr }}
         env:
