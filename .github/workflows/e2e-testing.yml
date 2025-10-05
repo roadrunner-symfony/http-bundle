@@ -152,7 +152,7 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Download RoadRunner ${{ matrix.rr }}
-        run: ./vendor/bin/rr get-binary  --no-config --no-interaction --filter=${{ matrix.rr }} --no-ansi
+        run:  ./vendor/bin/dload get --force --no-ansi --no-interaction rr:${{ matrix.rr }}
 
       - name: Run test suite on PHP ${{ matrix.php }} and Symfony ${{ matrix.symfony }} and RoadRunner ${{ matrix.rr }}
         run: make testing

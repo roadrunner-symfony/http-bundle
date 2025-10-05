@@ -9,7 +9,7 @@ analysis-code:
 
 
 get-rr:
-	./vendor/bin/rr get-binary  --no-config --no-interaction --no-ansi
+	./vendor/bin/dload get --force --no-ansi --no-interaction rr
 
 start-rr:
 	rm -rf var && ./rr serve -c tests/App/.rr.http.yaml
