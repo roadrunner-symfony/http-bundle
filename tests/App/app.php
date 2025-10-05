@@ -160,9 +160,9 @@ final class Kernel extends BaseKernel
 
 
     #[Route(path: '/returnJsonResponse', methods: [Request::METHOD_GET])]
-    public function returnJsonResponse(): Response
+    public function returnJsonResponse(): StreamedJsonResponse
     {
-        return StreamedJsonResponse::fromIterable(
+        return new StreamedJsonResponse(
             (static function (): \Generator {
                 for ($i = 0; $i < 1500; $i++) {
                     if ($i % 2 === 0) {
@@ -192,7 +192,7 @@ final class Kernel extends BaseKernel
 
 
     #[Route(path: '/returnOriginalJsonResponse', methods: [Request::METHOD_GET])]
-    public function returnOriginalJsonResponse(): Response
+    public function returnOriginalJsonResponse(): SymfonyStreamedJsonResponse
     {
         return new SymfonyStreamedJsonResponse(
             (static function (): \Generator {

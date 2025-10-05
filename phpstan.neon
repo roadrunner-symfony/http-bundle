@@ -9,8 +9,8 @@ parameters:
 	scanFiles:
 	    - vendor/symfony/dependency-injection/Loader/Configurator/ContainerConfigurator.php
 
-	excludePaths:
-	    - src/Bridge/Encoder/Json/JsonStream.php
+#	excludePaths:
+#	    - src/Bridge/Encoder/Json/JsonStream.php
 
 	stubFiles:
 	    - stubs/codeception/Example.php
