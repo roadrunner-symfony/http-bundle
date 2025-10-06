@@ -6,7 +6,7 @@ server:
     command: 'php app.php'
     env:
         - APP_RUNTIME: Roadrunner\Integration\Symfony\Http\Runtime\HttpRuntime
-        - APP_ENV: prod
+        - APP_ENV: dev
 #        - VAR_DUMPER_FORMAT: server
 #        - VAR_DUMPER_SERVER: 0.0.0.0:9912
 
