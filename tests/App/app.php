@@ -227,7 +227,7 @@ final class Kernel extends BaseKernel
     #[Route(path: '/returnHeaders', methods: [Request::METHOD_GET])]
     public function returnHeaders(): Response
     {
-        $response = new Response(status: Response::HTTP_NO_CONTENT, headers:  [
+        $response = new Response(status: Response::HTTP_NO_CONTENT, headers: [
             'Content-Type' => 'text/plain; charset=utf-8',
             'Keep-Alive'   => 'timeout=5, max=997',
         ]);
@@ -240,7 +240,7 @@ final class Kernel extends BaseKernel
 
 
     #[Route(path: '/acceptHeaders', methods: [Request::METHOD_POST])]
-    public function acceptHeaders (Request $request): JsonResponse
+    public function acceptHeaders(Request $request): JsonResponse
     {
         return new JsonResponse(iterator_to_array($request->headers->getIterator()));
     }
