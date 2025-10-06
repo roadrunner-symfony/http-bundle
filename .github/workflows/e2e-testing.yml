@@ -145,7 +145,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          tools: flex
+          tools: flex, composer:v2
           extensions: opcache,zip,intl,pcntl,sockets,protobuf,grpc
 
       - run: composer config -- github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}

@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -221,6 +222,29 @@ final class Kernel extends BaseKernel
             })()
         );
     }
+
+
+    #[Route(path: '/returnHeaders', methods: [Request::METHOD_GET])]
+    public function returnHeaders(): Response
+    {
+        $response = new Response(status: Response::HTTP_NO_CONTENT, headers:  [
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'Keep-Alive'   => 'timeout=5, max=997',
+        ]);
+
+        $response->headers->setCookie(Cookie::create('Server', 'RoadRunner'));
+
+        return $response;
+    }
+
+
+
+    #[Route(path: '/acceptHeaders', methods: [Request::METHOD_POST])]
+    public function acceptHeaders (Request $request): JsonResponse
+    {
+        return new JsonResponse(iterator_to_array($request->headers->getIterator()));
+    }
+
 }
 
 return static function (array $context): Kernel {
