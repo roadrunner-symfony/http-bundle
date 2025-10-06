@@ -148,10 +148,12 @@ jobs:
           tools: flex, composer:v2
           extensions: opcache,zip,intl,pcntl,sockets,protobuf,grpc
 
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
       - name: Cache dependencies
         uses: actions/cache@v4
-        env:
-          DIR: ${{ inputs.dir }}
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.php }}-${{ matrix.symfony }}-composer-${{ hashFiles('**/composer.lock') }}
