@@ -123,7 +123,7 @@ jobs:
             rr: '2025.*'
 
           - php: 8.3
-            symfony: '7.3*'
+            symfony: '7.3.*'
             rr: '2024.*'
 
           - php: 8.3
@@ -131,7 +131,7 @@ jobs:
             rr: '2025.*'
 
           - php: 8.4
-            symfony: '7.3*'
+            symfony: '7.3.*'
             rr: '2024.*'
 
           - php: 8.4
