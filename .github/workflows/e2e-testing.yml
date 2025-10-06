@@ -148,18 +148,15 @@ jobs:
           tools: flex, composer:v2
           extensions: opcache,zip,intl,pcntl,sockets,protobuf,grpc
 
-      - run: composer config -- github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}
-        name: Register GitHub token for Composer
-
-      - run: composer validate
-        name: test validate
-
-      - name: Download dependencies
-        env:
-          SYMFONY_REQUIRE: ${{ matrix.symfony }}
-        uses: ramsey/composer-install@v3
+      - name: Cache dependencies
+        uses: actions/cache@v4
         with:
-          custom-cache-suffix: $(/bin/date -u --date='last Mon' "+%F")
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ matrix.php }}-${{ matrix.symfony }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ matrix.php }}-${{ matrix.symfony}}-composer
+
+      - name: Install dependencies
+        run: composer install --prefer-dist
 
       - name: Download RoadRunner ${{ matrix.rr }}
         env:
