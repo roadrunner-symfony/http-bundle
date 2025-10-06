@@ -150,12 +150,16 @@ jobs:
 
       - name: Cache dependencies
         uses: actions/cache@v4
+        env:
+          DIR: ${{ inputs.dir }}
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.php }}-${{ matrix.symfony }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ matrix.php }}-${{ matrix.symfony}}-composer
 
       - name: Install dependencies
+        env:
+          SYMFONY_REQUIRE: ${{ matrix.symfony }}
         run: composer install --prefer-dist
 
       - name: Download RoadRunner ${{ matrix.rr }}
