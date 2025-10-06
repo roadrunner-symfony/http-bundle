@@ -150,11 +150,14 @@ final class Kernel extends BaseKernel
     public function returnOriginalStreamingResponse(): Response
     {
         return new SymfonyStreamedResponse(
-            (static function (): \Generator {
+            static function (): void {
                 for ($i = 0; $i < 1550; $i++) {
-                    yield random_int(1, $i + 1) . PHP_EOL;
+                    echo random_int(1, $i + 1) . PHP_EOL;
+
+                    @ob_flush();
+                    flush();
                 }
-            })()
+            }
         );
     }
 

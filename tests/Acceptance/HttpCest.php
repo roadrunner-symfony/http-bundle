@@ -203,21 +203,9 @@ final class HttpCest
 
         $count = 0;
 
-        $content = '';
-
-        while (null !== $chunk = $response->getBody()->read()) {
+        while (null !== $response->getBody()->read()) {
             $count++;
-
-            $content .= $chunk;
         }
-
-
-        if ($uri == '/returnOriginalStreamingResponse') {
-            dump($content);
-        }
-
-
-        echo $count;
 
         assertTrue($count > 1500);
     }
