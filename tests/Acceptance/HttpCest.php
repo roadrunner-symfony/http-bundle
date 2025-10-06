@@ -203,8 +203,17 @@ final class HttpCest
 
         $count = 0;
 
-        while (null !== $response->getBody()->read()) {
+        $content = '';
+
+        while (null !== $chunk = $response->getBody()->read()) {
             $count++;
+
+            $content .= $chunk;
+        }
+
+
+        if ($uri == '/returnOriginalStreamingResponse') {
+            dump($content);
         }
 
 

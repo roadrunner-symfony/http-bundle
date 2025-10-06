@@ -7,8 +7,8 @@ server:
     env:
         - APP_RUNTIME: Roadrunner\Integration\Symfony\Http\Runtime\HttpRuntime
         - APP_ENV: prod
-        - VAR_DUMPER_FORMAT: server
-        - VAR_DUMPER_SERVER: 0.0.0.0:9912
+#        - VAR_DUMPER_FORMAT: server
+#        - VAR_DUMPER_SERVER: 0.0.0.0:9912
 
 http:
     address: '0.0.0.0:8080'
