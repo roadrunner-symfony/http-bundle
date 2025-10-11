@@ -6,9 +6,15 @@ declare(strict_types=1);
 use PHPUnit\Framework\Constraint\IsEqual;
 use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedJsonResponse;
 use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse;
+
+use function Roadrunner\Integration\Symfony\Http\DependencyInjection\reference;
+
 use Roadrunner\Integration\Symfony\Http\RoadRunnerHttpBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -39,7 +45,7 @@ final class Kernel extends BaseKernel
         ];
     }
 
-    protected function configureContainer(ContainerConfigurator $container): void
+    protected function configureContainer(ContainerConfigurator $container, LoaderInterface $loader, ContainerBuilder $builder): void
     {
         $container->extension('framework', [
             'secret' => 'S0ME_SECRET',
@@ -48,6 +54,21 @@ final class Kernel extends BaseKernel
         $container->parameters()
             ->set('.container.dumper.inline_factories', true)
         ;
+
+
+        $builder->addCompilerPass(new class implements CompilerPassInterface {
+            public function process(ContainerBuilder $container): void
+            {
+                $container->getDefinition('error_handler.error_renderer.serializer')
+                    ->replaceArgument('1', 'json')
+                    ->replaceArgument(2, null)
+                ;
+
+                $container->getDefinition('error_controller')
+                    ->replaceArgument(2, reference('error_handler.error_renderer.serializer'))
+                ;
+            }
+        });
     }
 
 
