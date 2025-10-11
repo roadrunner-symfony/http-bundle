@@ -97,6 +97,36 @@ road_runner_http:
 ```
 
 
+## Streamed Response
+
+
+
+The bundle supports the standard Symfony responses:
+
+```php
+Symfony\Component\HttpFoundation\StreamedResponse
+Symfony\Component\HttpFoundation\StreamedJsonResponse
+```
+
+It also provides its own optimized implementations:
+
+```php
+Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse
+Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedJsonResponse
+```
+
+
+**We recommend using the Roadrunner\Integration\Symfony implementations** whenever possible, as they eliminate unnecessary I/O overhead and offer better performance in the RoadRunner environment.
+</br>**At the same time, full backward compatibility** with the standard Symfony responses is preserved, ensuring that third-party libraries built for Symfony\Component\HttpFoundation continue to work seamlessly.
+
+
+Examples of use:
+- [`Symfony\Component\HttpFoundation\StreamedResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L171)
+- [`Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L158)
+- [`Symfony\Component\HttpFoundation\StreamedJsonResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L188)
+- [`Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedJsonResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L188)
+
+
 
 
 
