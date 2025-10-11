@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Symfony RoadRunner Http
+ *
+ * @author    Vlad Shashkov <shashkov.root@gmail.com>
+ * @copyright Copyright (c) 2025, The RoadRunner community
+ */
+
 declare(strict_types=1);
 
 namespace Roadrunner\Integration\Symfony\Http\Runtime;
@@ -23,6 +30,7 @@ final class HttpRunner implements Runner
 
     /**
      * @throws Exception
+     * @throws Throwable
      */
     public function run(): int
     {
@@ -50,7 +58,7 @@ final class HttpRunner implements Runner
                     break;
                 }
             } catch (Throwable $e) {
-                $this->worker->respondThrowable($e);
+                $this->worker->sendError($e, $this->kernel, $request ?? null);
 
                 continue;
             }
@@ -67,7 +75,13 @@ final class HttpRunner implements Runner
                 continue;
             }
 
-            $this->worker->respond($response);
+            try {
+                $this->worker->respond($response);
+            } catch (Throwable $e) {
+                $this->worker->sendError($e, $this->kernel, $request);
+
+                continue;
+            }
 
 
             if ($isTerminableKernel) {
@@ -75,7 +89,7 @@ final class HttpRunner implements Runner
                     /** @phpstan-ignore method.notFound */
                     $this->kernel->terminate($request, $response);
                 } catch (Throwable $e) {
-                    ///
+                    $this->worker->sendError($e, $this->kernel, $request);
                 }
             }
 

@@ -67,7 +67,7 @@ road_runner_http:
 Install packages:
 
 ```bash
-composer require orm temporal-doctrine
+composer require orm
 ```
 
 

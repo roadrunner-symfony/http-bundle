@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Temporal Bundle
+ * Symfony RoadRunner Http
  *
- * @author Vlad Shashkov <v.shashkov@pos-credit.ru>
- * @copyright Copyright (c) 2023, The Vanta
+ * @author    Vlad Shashkov <shashkov.root@gmail.com>
+ * @copyright Copyright (c) 2025, The RoadRunner community
  */
 
 declare(strict_types=1);

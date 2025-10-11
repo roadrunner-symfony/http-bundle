@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Symfony RoadRunner Http
+ *
+ * @author    Vlad Shashkov <shashkov.root@gmail.com>
+ * @copyright Copyright (c) 2025, The RoadRunner community
+ */
+
 declare(strict_types=1);
 
 namespace Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler;
@@ -47,7 +54,11 @@ final class RunnerCompilerPass implements CompilerPass
         $container->register('roadrunner.http.runner', HttpRunner::class)
             ->setArguments([
                 new Reference('kernel'),
-                new Definition(HttpWorker::class, [new Reference('error_renderer'), $httpWorkerRoadRunner]),
+                new Definition(HttpWorker::class, [
+                    new Reference('error_renderer'),
+                    $httpWorkerRoadRunner,
+                    new Reference('event_dispatcher'),
+                ]),
                 new Reference('roadrunner.http.pipeline_middleware'),
             ])
             ->setPublic(true)

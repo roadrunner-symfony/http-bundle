@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Symfony RoadRunner Http
+ *
+ * @author    Vlad Shashkov <shashkov.root@gmail.com>
+ * @copyright Copyright (c) 2025, The RoadRunner community
+ */
+
 declare(strict_types=1);
 
 namespace Roadrunner\Integration\Symfony\Http\Runtime;
@@ -15,11 +22,15 @@ use Spiral\RoadRunner\Http\GlobalState;
 use Spiral\RoadRunner\Http\HttpWorkerInterface as RoadRunnerHttpWorker;
 use Spiral\RoadRunner\Http\Request as RoadRunnerHttpRequest;
 use Symfony\Component\ErrorHandler\ErrorRenderer\ErrorRendererInterface as ErrorRenderer;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface as EventDispatcher;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse as SymfonyStreamedResponse;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface as HttpKernel;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Throwable;
 
 /**
@@ -30,6 +41,7 @@ final class HttpWorker
     public function __construct(
         private readonly ErrorRenderer $errorRenderer,
         private readonly RoadRunnerHttpWorker $worker,
+        private readonly ?EventDispatcher $dispatcher = null,
     ) {}
 
     public function waitRequest(): ?SymfonyRequest
@@ -95,6 +107,26 @@ final class HttpWorker
         return $result;
     }
 
+    public function sendError(Throwable $e, HttpKernel $kernel, ?SymfonyRequest $request = null): void
+    {
+        try {
+            $this->worker->getWorker()->error($e->__toString());
+        } finally {
+            if ($this->dispatcher == null) {
+                return;
+            }
+
+            $this->dispatcher->dispatch(
+                new ExceptionEvent(
+                    $kernel,
+                    $request ?? new SymfonyRequest(attributes: ['rr_nil_request' => true]),
+                    HttpKernel::MAIN_REQUEST,
+                    $e
+                ),
+                KernelEvents::EXCEPTION
+            );
+        }
+    }
 
 
     public function respondThrowable(Throwable $exception): SymfonyResponse

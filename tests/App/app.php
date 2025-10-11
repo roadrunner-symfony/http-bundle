@@ -10,6 +10,7 @@ use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse;
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\reference;
 
 use Roadrunner\Integration\Symfony\Http\RoadRunnerHttpBundle;
+use Sentry\SentryBundle\SentryBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -42,6 +43,7 @@ final class Kernel extends BaseKernel
         return [
             new FrameworkBundle(),
             new RoadRunnerHttpBundle(),
+            new SentryBundle(),
         ];
     }
 
