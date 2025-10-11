@@ -33,9 +33,11 @@ RoadRunner is a high-performance PHP application server and process manager, des
 composer req http
 ```
 
-3. Configure docker-compose-roadrunner.yml/Dockerfile/.rr.http.yaml/config/packages/roadrunner.http.yaml
-
-
+3. Configure:
+ - docker-compose-roadrunner.yml
+ - Dockerfile
+ - .rr.http.yaml
+ - config/packages/roadrunner.http.yaml
 
 
 ## Sentry integrations

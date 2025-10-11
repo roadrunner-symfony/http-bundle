@@ -231,8 +231,8 @@ final class Kernel extends BaseKernel
     public function returnHeaders(): Response
     {
         $response = new Response(status: Response::HTTP_NO_CONTENT, headers: [
-            'Content-Type' => 'text/plain; charset=utf-8',
-            'Keep-Alive'   => 'timeout=5, max=997',
+            'Server'     => 'RoadRunner',
+            'Keep-Alive' => 'timeout=5, max=997',
         ]);
 
         $response->headers->setCookie(Cookie::create('Server', 'RoadRunner'));

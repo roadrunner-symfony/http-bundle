@@ -72,7 +72,7 @@ class StreamedJsonResponse extends StreamedResponse
             return;
         }
 
-        yield json_encode($data, $jsonEncodingOptions | JSON_THROW_ON_ERROR);
+        yield json_encode($data, $jsonEncodingOptions);
     }
 
 
@@ -105,7 +105,7 @@ class StreamedJsonResponse extends StreamedResponse
             }
         });
 
-        $jsonParts = explode('"' . self::PLACEHOLDER . '"', json_encode($data, $jsonEncodingOptions | JSON_THROW_ON_ERROR));
+        $jsonParts = explode('"' . self::PLACEHOLDER . '"', json_encode($data, $jsonEncodingOptions));
 
         foreach ($generators as $index => $generator) {
             // send first and between parts of the structure
@@ -154,9 +154,7 @@ class StreamedJsonResponse extends StreamedResponse
                 yield json_encode((string) $key, $keyEncodingOptions) . ':';
             }
 
-            foreach ($this->streamData($item, $jsonEncodingOptions, $keyEncodingOptions) as $child) {
-                yield $child;
-            }
+            yield from $this->streamData($item, $jsonEncodingOptions, $keyEncodingOptions);
         }
 
         if ($isFirstItem) { // indicates that the generator was empty

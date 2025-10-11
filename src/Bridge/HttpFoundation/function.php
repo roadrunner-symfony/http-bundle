@@ -6,6 +6,10 @@ namespace Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation;
 
 use Fiber;
 use Generator;
+
+use function ob_end_clean;
+use function ob_start;
+
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -17,7 +21,7 @@ use Throwable;
 function echoToGenerator(StreamedResponse $response): Generator
 {
     $fiber = new Fiber(static function () use ($response): void {
-        ob_start(static function (string $chunk) {
+        ob_start(static function (string $chunk): string {
             Fiber::suspend($chunk);
 
             return '';

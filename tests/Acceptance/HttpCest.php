@@ -15,6 +15,7 @@ use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Request;
 use Codeception\Attribute\DataProvider;
 use Codeception\Example;
+use Codeception\Module\PhpBrowser;
 use Codeception\Module\REST;
 use Exception;
 use JsonStreamingParser\Exception\ParsingException;
@@ -23,6 +24,7 @@ use JsonStreamingParser\Parser;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertIsResource;
+use function PHPUnit\Framework\assertJsonStringEqualsJsonString;
 use function PHPUnit\Framework\assertTrue;
 
 use Roadrunner\Integration\Symfony\Http\Test\Support\AcceptanceTester;
@@ -275,5 +277,54 @@ final class HttpCest
         } finally {
             fclose($stream);
         }
+    }
+
+
+    public function getHeadersResponse(AcceptanceTester $tester, PhpBrowser $browser): void
+    {
+        $tester->sendGet('/returnHeaders');
+
+        assertEquals('timeout=5, max=997', $tester->grabHttpHeader('Keep-Alive'));
+        assertEquals('RoadRunner', $browser->grabCookie('Server'));
+        assertEquals('RoadRunner', $tester->grabHttpHeader('Server'));
+    }
+
+
+    public function sendHeaders(AcceptanceTester $tester): void
+    {
+        $tester->haveHttpHeader('Accept', 'application/json');
+        $tester->haveHttpHeader('ApiKey', '12345...Roadrunner');
+        $tester->haveHttpHeader('Connection', 'keep-alive');
+        $tester->haveHttpHeader('Accept-Language', 'en-US,en;q=0.5');
+
+        $response = $tester->sendPost('/acceptHeaders');
+
+        $expectedHeaders = <<<JSON
+                {
+                  "user-agent": [
+                    "Symfony BrowserKit"
+                  ],
+                  "content-length": [
+                    "0"
+                  ],
+                  "accept": [
+                    "application\/json"
+                  ],
+                  "apikey": [
+                    "12345...Roadrunner"
+                  ],
+                  "connection": [
+                    "keep-alive"
+                  ],
+                  "accept-language": [
+                    "en-US,en;q=0.5"
+                  ],
+                  "x-php-ob-level": [
+                    "1"
+                  ]
+                }
+            JSON;
+
+        assertJsonStringEqualsJsonString($expectedHeaders, $response);
     }
 }
