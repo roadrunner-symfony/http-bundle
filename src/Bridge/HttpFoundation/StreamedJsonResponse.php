@@ -72,7 +72,7 @@ class StreamedJsonResponse extends StreamedResponse
             return;
         }
 
-        yield json_encode($data, $jsonEncodingOptions);
+        yield json_encode($data, $jsonEncodingOptions | JSON_THROW_ON_ERROR);
     }
 
 
@@ -105,7 +105,7 @@ class StreamedJsonResponse extends StreamedResponse
             }
         });
 
-        $jsonParts = explode('"' . self::PLACEHOLDER . '"', json_encode($data, $jsonEncodingOptions));
+        $jsonParts = explode('"' . self::PLACEHOLDER . '"', json_encode($data, $jsonEncodingOptions | JSON_THROW_ON_ERROR));
 
         foreach ($generators as $index => $generator) {
             // send first and between parts of the structure

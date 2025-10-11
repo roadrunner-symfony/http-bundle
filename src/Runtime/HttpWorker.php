@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Roadrunner\Integration\Symfony\Http\Runtime;
 
+use function array_map;
+
 use JsonException;
 
 use function Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\echoToGenerator;
