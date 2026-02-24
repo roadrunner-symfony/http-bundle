@@ -16,7 +16,6 @@ use Roadrunner\Integration\Symfony\Http\Bridge\Doctrine\ConnectionPingMiddleware
 use Roadrunner\Integration\Symfony\Http\Bridge\Doctrine\PsrLoggingDoctrineOpenTransactionMiddleware;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Configuration;
 
-use function Roadrunner\Integration\Symfony\Http\DependencyInjection\definition;
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\doctrinePingMiddlewareId;
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\loggingDoctrineOpenTransactionMiddlewareId;
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\referenceLogger;
@@ -60,12 +59,9 @@ final class DoctrineCompilerPass implements CompilerPass
 
             $container->register($middlewareId, ConnectionPingMiddleware::class)
                 ->setArguments([
-                    definition(ConnectionPingMiddleware::class)
-                        ->setArguments([
-                            new Reference('doctrine'),
-                            $entityManager,
-                            referenceLogger(),
-                        ]),
+                    new Reference('doctrine'),
+                    $entityManager,
+                    referenceLogger(),
                 ])
             ;
         }
