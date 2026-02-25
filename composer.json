@@ -47,7 +47,7 @@
         "friendsofphp/php-cs-fixer": "3.65.0|3.94.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-symfony": "^2.0",
-        "sentry/sentry-symfony": "^4.10",
+        "sentry/sentry-symfony": "^4.14|^5.0",
         "nyholm/symfony-bundle-test": "^3.0",
         "phpunit/phpunit": "^10.3",
         "symfony/monolog-bundle": "^3.8",
