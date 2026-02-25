@@ -49,7 +49,7 @@
         "phpstan/phpstan-symfony": "^2.0",
         "sentry/sentry-symfony": "^4.14|^5.0",
         "nyholm/symfony-bundle-test": "^3.0",
-        "phpunit/phpunit": "^11.0",
+        "phpunit/phpunit": "^10.3|^11.0",
         "symfony/monolog-bundle": "^3.8|^4.0",
         "symfony/web-profiler-bundle": "^6.0|^7.0|^8.0",
         "codeception/codeception": "^5.2",
@@ -64,8 +64,7 @@
         "amphp/file": "^3.2",
         "symfony/string": "^6.0|^7.0|^8.0",
         "salsify/json-streaming-parser": "^8.3",
-        "internal/dload": "^1.6",
-        "codeception/lib-web": "^2.0"
+        "internal/dload": "^1.6"
     },
     "config": {
         "allow-plugins": {
