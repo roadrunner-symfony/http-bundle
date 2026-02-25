@@ -41,7 +41,7 @@
         "spiral/roadrunner-http": "^v3.6"
     },
     "require-dev": {
-        "doctrine/orm": "^2.15",
+        "doctrine/orm": "^2.15|^3.0",
         "doctrine/doctrine-bundle": "^2.10|^3.0",
         "phpstan/phpstan": "^2.0",
         "friendsofphp/php-cs-fixer": "3.65.0|3.94.0",
