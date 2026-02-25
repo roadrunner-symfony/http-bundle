@@ -138,6 +138,14 @@ jobs:
             symfony: '7.3.*'
             rr: '2025.*'
 
+          - php: 8.4
+            symfony: '8.0.*'
+            rr: '2025.*'
+
+          - php: 8.5
+            symfony: '8.0.*'
+            rr: '2025.*'
+
     steps:
       - uses: actions/checkout@master
 
