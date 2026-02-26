@@ -304,6 +304,7 @@ final class HttpCest
                   "user-agent": [
                     "Symfony BrowserKit"
                   ],
+                  "host":["0.0.0.0:8080"],
                   "content-length": [
                     "0"
                   ],
