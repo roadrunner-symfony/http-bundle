@@ -35,34 +35,34 @@
     },
     "require": {
         "php": "^8.1",
-        "symfony/dependency-injection": "^6.0|^7.0",
-        "symfony/http-kernel": "^6.0|^7.0",
-        "symfony/runtime": "^6.0|^7.0",
+        "symfony/dependency-injection": "^6.0|^7.0|^8.0",
+        "symfony/http-kernel": "^6.0|^7.0|^8.0",
+        "symfony/runtime": "^6.0|^7.0|^8.0",
         "spiral/roadrunner-http": "^v3.6"
     },
     "require-dev": {
-        "doctrine/orm": "^2.15",
-        "doctrine/doctrine-bundle": "^2.10",
+        "doctrine/orm": "^2.15|^3.0",
+        "doctrine/doctrine-bundle": "^2.10|^3.0",
         "phpstan/phpstan": "^2.0",
-        "friendsofphp/php-cs-fixer": "3.65.0",
+        "friendsofphp/php-cs-fixer": "3.65.0|3.94.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-symfony": "^2.0",
-        "sentry/sentry-symfony": "^4.10",
+        "sentry/sentry-symfony": "^4.14|^5.0",
         "nyholm/symfony-bundle-test": "^3.0",
-        "phpunit/phpunit": "^10.3",
-        "symfony/monolog-bundle": "^3.8",
-        "symfony/web-profiler-bundle": "^6.0|^7.0",
+        "phpunit/phpunit": "^10.3|^11.0",
+        "symfony/monolog-bundle": "^3.8|^4.0",
+        "symfony/web-profiler-bundle": "^6.0|^7.0|^8.0",
         "codeception/codeception": "^5.2",
-        "codeception/module-phpbrowser": "*",
-        "codeception/module-asserts": "*",
+        "codeception/module-phpbrowser": "^4.0|^3.0|^2.0",
+        "codeception/module-asserts": "^3",
         "spiral-packages/profiler": "^1.2",
         "spiral/roadrunner": "^2025.1",
-        "symfony/mime": "^6.0|^7.0",
+        "symfony/mime": "^6.0|^7.0|^8.0",
         "codeception/module-rest": "^3.4",
-        "symfony/serializer": "^6.0|^7.0",
+        "symfony/serializer": "^6.0|^7.0|^8.0",
         "amphp/http-client": "^5.3",
         "amphp/file": "^3.2",
-        "symfony/string": "^6.0|^7.0",
+        "symfony/string": "^6.0|^7.0|^8.0",
         "salsify/json-streaming-parser": "^8.3",
         "internal/dload": "^1.6"
     },
@@ -71,6 +71,10 @@
             "symfony/runtime": true,
             "phpstan/extension-installer": true,
             "php-http/discovery": false
+        },
+        "audit": {
+            "abandoned": "ignore",
+            "block-insecure": false
         }
     }
 }
