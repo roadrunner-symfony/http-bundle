@@ -46,7 +46,9 @@ final class HttpRunner implements Runner
                 '_route_params'    => [
                     'path' => '/',
                 ],
-            ])
+            ]),
+            Kernel::SUB_REQUEST,
+            false
         );
 
 

@@ -77,14 +77,13 @@ final class Kernel extends BaseKernel
     #[Route(path: '/acceptTextRequest', defaults: ['_format' => 'json'], methods: [Request::METHOD_POST], format: 'json')]
     public function acceptTextRequest(Request $request): Response
     {
-        /** @var non-empty-string|null $ext */
-        $ext = MimeTypes::getDefault()->getExtensions($request->headers->get('CONTENT_TYPE', ''))[0];
+        $file = $request->headers->get('X-File');
 
-        if ($ext == null) {
-            return new JsonResponse(['test' => false, 'message' => 'Failed get ext']);
+        if ($file == null) {
+            return new JsonResponse(['test' => false, 'message' => 'Failed get file']);
         }
 
-        $expectedContent = @file_get_contents(sprintf(__DIR__ . '/../_data/request.%s', $ext));
+        $expectedContent = @file_get_contents(sprintf(__DIR__ . '/../_data/%s', $file));
 
         if ($expectedContent === false) {
             return new JsonResponse(['test' => false, 'message' => 'Failed get expected content']);
@@ -143,16 +142,14 @@ final class Kernel extends BaseKernel
     #[Route(path: '/returnTextResponse', methods: [Request::METHOD_GET])]
     public function returnTextResponse(Request $request): Response
     {
+        $file        = $request->headers->get('X-File');
         $contentType = $request->headers->get('Accept', '');
 
-        /** @var non-empty-string|null $ext */
-        $ext = MimeTypes::getDefault()->getExtensions($contentType)[0];
-
-        if ($ext == null) {
-            return new JsonResponse(['test' => false, 'message' => 'Failed get ext']);
+        if ($file == null) {
+            return new JsonResponse(['test' => false, 'message' => 'Failed get file']);
         }
 
-        return new Response(file_get_contents(sprintf(__DIR__ . '/../_data/request.%s', $ext)) ?? '', headers: ['Content-Type' => $contentType]);
+        return new Response(file_get_contents(sprintf(__DIR__ . '/../_data/%s', $file)) ?? '', headers: ['Content-Type' => $contentType]);
     }
 
 
