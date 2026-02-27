@@ -41,7 +41,10 @@ final class HttpCest
     public function sendTextRequest(AcceptanceTester $tester, Example $example): void
     {
         $tester->haveHttpHeader('Content-Type', $example['content-type']);
+        $tester->haveHttpHeader('X-File', $example['file']);
+
         $tester->sendPost('/acceptTextRequest', (string) file_get_contents(codecept_data_dir($example['file'])));
+
         $tester->seeResponseCodeIsSuccessful();
         $tester->seeResponseJsonMatchesJsonPath('$.test');
         $tester->seeResponseJsonMatchesJsonPath('$.message');
@@ -147,6 +150,7 @@ final class HttpCest
     #[DataProvider('getTextResponseDataProvider')]
     public function getTextResponse(AcceptanceTester $tester, Example $example): void
     {
+        $tester->haveHttpHeader('X-File', $example['file']);
         $tester->haveHttpHeader('Accept', $example['content-type']);
         $response = $tester->sendGet('/returnTextResponse');
 
