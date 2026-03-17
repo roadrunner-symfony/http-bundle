@@ -24,8 +24,7 @@
             "Roadrunner\\Integration\\Symfony\\Http\\": "src/"
         },
         "files": [
-            "src/DependencyInjection/function.php",
-            "src/Bridge/HttpFoundation/function.php"
+            "src/DependencyInjection/function.php"
         ]
     },
     "autoload-dev": {
@@ -64,7 +63,8 @@
         "amphp/file": "^3.2",
         "symfony/string": "^6.0|^7.0|^8.0",
         "salsify/json-streaming-parser": "^8.3",
-        "internal/dload": "^1.6"
+        "internal/dload": "^1.6",
+        "amphp/pipeline": "^1.2"
     },
     "config": {
         "allow-plugins": {

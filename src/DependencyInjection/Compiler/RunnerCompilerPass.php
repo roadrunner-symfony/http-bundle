@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler;
 
+use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\AmpStreamedResponseConverter;
+use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\FiberStreamedResponseConverter;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Configuration;
 
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\definition;
@@ -51,12 +53,19 @@ final class RunnerCompilerPass implements CompilerPass
             ])
         ;
 
+        $streamedConverter = match ($config['streamedResponseConverter']) {
+            'fiber' => definition(FiberStreamedResponseConverter::class),
+            'amp'   => definition(AmpStreamedResponseConverter::class),
+            default => new Reference($config['streamedResponseConverter'])
+        };
+
         $container->register('roadrunner.http.runner', HttpRunner::class)
             ->setArguments([
                 new Reference('kernel'),
                 new Definition(HttpWorker::class, [
                     new Reference('error_renderer'),
                     $httpWorkerRoadRunner,
+                    $streamedConverter,
                     new Reference('event_dispatcher'),
                 ]),
                 new Reference('roadrunner.http.pipeline_middleware'),

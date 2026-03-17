@@ -11,6 +11,7 @@ use function Roadrunner\Integration\Symfony\Http\DependencyInjection\reference;
 
 use Roadrunner\Integration\Symfony\Http\RoadRunnerHttpBundle;
 use Sentry\SentryBundle\SentryBundle;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -270,6 +271,12 @@ final class Kernel extends BaseKernel
 
 }
 
-return static function (array $context): Kernel {
-    return new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+return static function (array $context): object {
+    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+
+    if (array_key_exists('RR_MODE', $context) && $context['RR_MODE'] == 'http') {
+        return $kernel;
+    }
+
+    return new Application($kernel);
 };

@@ -24,6 +24,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface as BundleConfigur
  *    logger: non-empty-string,
  *    useSentryIntegration: bool,
  *    middlewares: array<non-empty-string>,
+ *    streamedResponseConverter: non-empty-string,
  *    useDoctrineIntegration: array<non-empty-string>,
  *    useLoggingDoctrineOpenTransaction: array<non-empty-string>,
  *    useTrackingSentryDoctrineOpenTransaction: array<non-empty-string>
@@ -137,6 +138,11 @@ final class Configuration implements BundleConfiguration
                 ->scalarNode('logger')
                     ->defaultValue('monolog.logger.roadrunner.http')
                     ->info('Logger for http worker, accepts serviceId')
+                ->end()
+
+                ->scalarNode('streamedResponseConverter')
+                    ->defaultValue('fiber')
+                    ->info('Converts a StreamedResponse into a Generator. Accepts a service ID. Built-in implementations: fiber (default), amp.')
                 ->end()
 
                 ->booleanNode('useSentryIntegration')
