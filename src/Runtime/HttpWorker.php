@@ -14,10 +14,9 @@ namespace Roadrunner\Integration\Symfony\Http\Runtime;
 use function array_map;
 
 use JsonException;
-
-use function Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\echoToGenerator;
-
+use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\FiberStreamedResponseConverter;
 use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse;
+use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponseConverter;
 use Spiral\RoadRunner\Http\GlobalState;
 use Spiral\RoadRunner\Http\HttpWorkerInterface as RoadRunnerHttpWorker;
 use Spiral\RoadRunner\Http\Request as RoadRunnerHttpRequest;
@@ -41,6 +40,7 @@ final class HttpWorker
     public function __construct(
         private readonly ErrorRenderer $errorRenderer,
         private readonly RoadRunnerHttpWorker $worker,
+        private readonly StreamedResponseConverter $responseConverter = new FiberStreamedResponseConverter(),
         private readonly ?EventDispatcher $dispatcher = null,
     ) {}
 
@@ -176,7 +176,7 @@ final class HttpWorker
         if ($response instanceof SymfonyStreamedResponse) {
             $this->worker->respond(
                 $response->getStatusCode(),
-                echoToGenerator($response),
+                $this->responseConverter->convert($response),
                 $stringifyHeaders($response->headers->all())
             );
 
