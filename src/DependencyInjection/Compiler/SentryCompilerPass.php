@@ -41,11 +41,7 @@ final class SentryCompilerPass implements CompilerPass
         $config = $container->getParameter(RoadRunnerHttpExtension::CONFIG_NAME);
 
         if ($config['useSentryIntegration']) {
-            $container->register('roadrunner.http.sentry_scope.middleware', SentryScopeMiddleware::class)
-                ->setArguments([
-                    new Reference(Hub::class),
-                ])
-            ;
+            $container->register('roadrunner.http.sentry_scope.middleware', SentryScopeMiddleware::class);
 
             $config['middlewares'][] = 'roadrunner.http.sentry_scope.middleware';
         }
