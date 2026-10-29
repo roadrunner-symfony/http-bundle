@@ -88,7 +88,6 @@ final class HttpRunner implements Runner
 
             if ($isTerminableKernel) {
                 try {
-                    /** @phpstan-ignore method.notFound */
                     $this->kernel->terminate($request, $response);
                 } catch (Throwable $e) {
                     $this->worker->sendError($e, $this->kernel, $request);
