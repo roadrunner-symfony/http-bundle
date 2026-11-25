@@ -1,58 +1,48 @@
 # RoadRunner Http-Bundle
 
-RoadRunner is a high-performance PHP application server and process manager, designed with extensibility in mind through its utilization of plugins.
-
-
+RoadRunner is a high-performance PHP application server and process manager with a plugin architecture.
 
 ## Features
 
 - **Middleware**
-- **Supported streaming response**
-- **Sentry**: Push/pop scope (if the [`SentryBundle`](https://github.com/getsentry/sentry-symfony) use)
-- **Doctrine**: clear opened managers and check connection is still usable after each request (
-  if [`DoctrineBundle`](https://github.com/doctrine/DoctrineBundle) is use)
-
+- **Streamed responses**
+- **Sentry** pushes and pops a scope for each request when [`SentryBundle`](https://github.com/getsentry/sentry-symfony) is in use.
+- **Doctrine** clears open entity managers and checks that the connection is still usable after each request when [`DoctrineBundle`](https://github.com/doctrine/DoctrineBundle) is in use.
 
 ## Requirements:
 
 - php >= 8.1
 - symfony >= 6.0
 
+1. Set up the recipes.
 
+[Recipe installation instructions](https://github.com/roadrunner-symfony/recipes?tab=readme-ov-file#installation)
 
-
-
-1. Connect recipes
-
-[`See link recipies repository`](https://github.com/roadrunner-symfony/recipes?tab=readme-ov-file#installation)
-
-
-2. Install package
+2. Install the package.
 
 ```bash
 composer req http
 ```
 
-3. Configure:
- - docker-compose-roadrunner.yml
- - Dockerfile
- - .rr.http.yaml
- - config/packages/roadrunner.http.yaml
-
+3. Configure the following files.
+   - docker-compose-roadrunner.yml
+   - Dockerfile
+   - .rr.http.yaml
+   - config/packages/roadrunner.http.yaml
 
 ## Sentry integrations
 
-Install packages:
+Install Sentry.
 
 ```bash
 composer require sentry
 ```
 
-If [`SentryBundle`](https://github.com/getsentry/sentry-symfony) is use, the following parameters is available to you:
+The following option requires [`SentryBundle`](https://github.com/getsentry/sentry-symfony).
 
-- `useSentryIntegration` - Connect integration
+- `useSentryIntegration` enables per-request Sentry scopes.
 
-Example config:
+Example configuration
 
 **Specific worker**
 
@@ -61,26 +51,23 @@ road_runner_http:
   useSentryIntegration: true
 ```
 
-
 ## Doctrine integrations
 
-Install packages:
+Install Doctrine.
 
 ```bash
 composer require orm
 ```
 
+[`DoctrineBundle`](https://github.com/doctrine/DoctrineBundle) enables these configuration options.
 
-If [`DoctrineBundle`](https://github.com/doctrine/DoctrineBundle) is use, the following parameters is available to you:
+- `useDoctrineIntegration` enables the Doctrine integration.
+- `useLoggingDoctrineOpenTransaction` reports unclosed transactions to Monolog.
+- `useTrackingSentryDoctrineOpenTransaction` reports unclosed transactions to Sentry.
 
-- `useDoctrineIntegration` - Connect integration
-- `useLoggingDoctrineOpenTransaction`        - Connect middleware that report unclosed transaction to monolog
-- `useTrackingSentryDoctrineOpenTransaction` - Connect middleware that report unclosed transaction to sentry
+Each option takes a list of entity manager names.
 
-These parameters accept a list of entity-managers
-
-Example config:
-
+Example configuration
 
 ```yaml
 road_runner_http:
@@ -96,10 +83,9 @@ road_runner_http:
     - default
 ```
 
-
 ## Route and controller middleware
 
-Register middleware as a Symfony service implementing `Roadrunner\Integration\Symfony\Http\Middleware\Middleware`. Enable service autoconfiguration or add the `roadrunner.http.middleware` tag. Private services and configured aliases can be used by service ID.
+Register the middleware as a Symfony service that implements `Roadrunner\Integration\Symfony\Http\Middleware\Middleware`, then enable autoconfiguration or add the `roadrunner.http.middleware` tag. Use the service ID to reference a private service or a configured alias.
 
 ```php
 use Roadrunner\Integration\Symfony\Http\Middleware\Attribute\UseMiddleware;
@@ -126,22 +112,22 @@ final class OrderController
 }
 ```
 
-The class attribute applies to every routed action on that controller. An action attribute applies to every route on that method unless it supplies an exact `route` name. For localized routes, use the canonical name.
+A class-level attribute applies to every routed action on the controller. On a method, it applies to all routes for that action. Set `route` to an exact route name to select just that route. For a localized route, use its canonical name.
 
-Global middleware runs first in configured order. The scoped chain starts at controller invocation, after routing, request listeners, and argument resolution. Higher scoped priorities run first (default `0`). At equal priority, class bindings precede method bindings, then declaration order breaks ties. For repeated scoped service IDs, the route-specific binding wins over the action binding, which wins over the class binding. Within the same scope, the highest priority wins, then the first declaration. A service configured globally and scoped can run in both places.
+Global middleware runs first, in configuration order. Scoped middleware wraps the controller call after routing, request listeners, and argument resolution have run. Higher priorities run first. The default is `0`. At equal priority, class bindings run before method bindings, and bindings on the same target follow declaration order.
 
-Call `$next($request)` with the same Symfony Request received by scoped middleware. Returning a response directly skips the rest of the chain and the controller.
+When a scoped service ID appears more than once, the route-specific binding takes precedence, followed by the action binding and then the class binding. Among bindings in the same scope, the highest priority wins. If priorities are equal, the first declaration wins. A service registered both globally and in a scope can run in both places.
+
+Pass the same Symfony request instance to `$next($request)` that the scoped middleware received. If middleware returns a response without calling `$next`, the rest of the chain and the controller are skipped.
 
 ```bash
 bin/console debug:middleware
 bin/console debug:middleware orders_preview
 ```
 
-The command shows the configured chain in entry order, including global middleware registered by integrations. With Symfony Web Profiler enabled, the **RoadRunner HTTP** panel shows the middleware actually invoked for the profiled worker request, including an empty chain. A response returned by global middleware before the Symfony kernel starts has no native Symfony profile.
+The command lists the configured middleware in the order it would run, including global middleware registered by integrations. In Symfony Web Profiler, the **RoadRunner HTTP** panel lists the middleware that ran for the profiled worker request. The panel is available even if the chain is empty. Symfony does not create a profile when global middleware returns a response before the kernel starts.
 
 ## Streamed Response
-
-
 
 The bundle supports the standard Symfony responses:
 
@@ -150,28 +136,19 @@ Symfony\Component\HttpFoundation\StreamedResponse
 Symfony\Component\HttpFoundation\StreamedJsonResponse
 ```
 
-It also provides its own optimized implementations:
+The bundle provides these RoadRunner implementations:
 
 ```php
 Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse
 Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedJsonResponse
 ```
 
+**Use the `Roadrunner\Integration\Symfony` implementations** where possible. They reduce I/O overhead and improve streaming performance in RoadRunner.
+</br>**Standard Symfony responses remain fully supported.** Third-party libraries that return `Symfony\Component\HttpFoundation` responses continue to work.
 
-**We recommend using the Roadrunner\Integration\Symfony implementations** whenever possible, as they eliminate unnecessary I/O overhead and offer better performance in the RoadRunner environment.
-</br>**At the same time, full backward compatibility** with the standard Symfony responses is preserved, ensuring that third-party libraries built for Symfony\Component\HttpFoundation continue to work seamlessly.
+Examples
 
-
-Examples of use:
 - [`Symfony\Component\HttpFoundation\StreamedResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L171)
 - [`Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L158)
 - [`Symfony\Component\HttpFoundation\StreamedJsonResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L188)
 - [`Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedJsonResponse`](https://github.com/roadrunner-symfony/http-bundle/blob/main/tests/App/app.php#L188)
-
-
-
-
-
-
-
-
