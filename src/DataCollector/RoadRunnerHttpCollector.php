@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Roadrunner\Integration\Symfony\Http\DataCollector;
 
 use Roadrunner\Integration\Symfony\Http\Middleware\MiddlewareTrace;
-use Roadrunner\Integration\Symfony\Http\Middleware\PipelineMiddleware;
+use Roadrunner\Integration\Symfony\Http\Middleware\WorkerRequestRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,12 +29,13 @@ final class RoadRunnerHttpCollector extends DataCollector implements LateDataCol
 
     public function __construct(
         private readonly RequestStack $requests,
+        private readonly WorkerRequestRegistry $workerRequestRegistry,
     ) {}
 
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
         $trace = $this->requests->getCurrentRequest() === $request && null === $this->requests->getParentRequest()
-            ? (PipelineMiddleware::workerRequest($request)['trace'] ?? null)
+            ? $this->workerRequestRegistry->traceFor($request)
             : null;
 
         $this->trace = $trace;

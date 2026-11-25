@@ -18,8 +18,6 @@ use Throwable;
 
 final class PipelineMiddleware
 {
-    private const WORKER_REQUEST_ATTRIBUTE = '_roadrunner_http_worker';
-
     /**
      * @param array<int, Middleware> $middlewares
      * @param array<int, string> $middlewareIds
@@ -28,49 +26,20 @@ final class PipelineMiddleware
         private readonly Kernel $kernel,
         private readonly array $middlewares,
         private readonly array $middlewareIds = [],
+        private readonly ?WorkerRequestRegistry $workerRequestRegistry = null,
     ) {}
 
     /** @throws Throwable */
     public function process(Request $request, ?MiddlewareTrace $trace = null): Response
     {
-        return $this->dispatch($request, function (Request $forwarded) use ($trace): Response {
-            $attributes = $forwarded->attributes;
-            $key        = self::WORKER_REQUEST_ATTRIBUTE;
-            $present    = $attributes->has($key);
-            $previous   = $attributes->get($key);
-            $context    = new WorkerRequestContext($forwarded, $trace);
-            $attributes->set($key, $context);
+        $handle                = $this->kernel->handle(...);
+        $workerRequestRegistry = $this->workerRequestRegistry;
 
-            try {
-                return $this->kernel->handle($forwarded);
-            } finally {
-                // Copies of the request may still hold this context.
-                $context->clear();
+        $next = null === $workerRequestRegistry
+            ? $handle
+            : static fn(Request $forwarded): Response => $workerRequestRegistry->duringHandle($forwarded, $trace, $handle);
 
-                foreach ([$attributes, $forwarded->attributes] as $bag) {
-                    if ($bag->get($key) !== $context) {
-                        continue;
-                    }
-
-                    if ($present) {
-                        $bag->set($key, $previous);
-                    } else {
-                        $bag->remove($key);
-                    }
-                }
-            }
-        }, $trace);
-    }
-
-    /**
-     * @internal
-     * @return array{trace: ?MiddlewareTrace}|null
-     */
-    public static function workerRequest(Request $request): ?array
-    {
-        $context = $request->attributes->get(self::WORKER_REQUEST_ATTRIBUTE);
-
-        return $context instanceof WorkerRequestContext ? $context->forRequest($request) : null;
+        return $this->dispatch($request, $next, $trace);
     }
 
     /** @param callable(Request): Response $next */

@@ -17,6 +17,7 @@ use Roadrunner\Integration\Symfony\Http\InstalledVersions;
 use Roadrunner\Integration\Symfony\Http\Middleware\PipelineMiddleware;
 use Roadrunner\Integration\Symfony\Http\Middleware\ScopedMiddlewareResolver;
 use Roadrunner\Integration\Symfony\Http\Middleware\ScopedMiddlewareSubscriber;
+use Roadrunner\Integration\Symfony\Http\Middleware\WorkerRequestRegistry;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -25,12 +26,14 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 return static function (ContainerConfigurator $configurator, ContainerBuilder $builder): void {
     $services = $configurator->services();
 
+    $services->set('roadrunner.http.worker_request_registry', WorkerRequestRegistry::class);
     $services->set('roadrunner.http.scoped_resolver', ScopedMiddlewareResolver::class);
 
     $services->set('roadrunner.http.scoped_subscriber', ScopedMiddlewareSubscriber::class)
         ->args([
             service('roadrunner.http.scoped_resolver'),
             service('event_dispatcher'),
+            service('roadrunner.http.worker_request_registry'),
         ])
         ->tag('kernel.event_subscriber')
     ;
@@ -39,6 +42,8 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $b
         ->args([
             service('kernel'),
             [],
+            [],
+            service('roadrunner.http.worker_request_registry'),
         ])
     ;
 
@@ -47,7 +52,7 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $b
 
     if (is_array($bundles) && isset($bundles['WebProfilerBundle'])) {
         $services->set(RoadRunnerHttpCollector::SERVICE_ID, RoadRunnerHttpCollector::class)
-            ->args([service('request_stack')])
+            ->args([service('request_stack'), service('roadrunner.http.worker_request_registry')])
             ->tag('data_collector', [
                 'id'       => RoadRunnerHttpCollector::NAME,
                 'template' => '@RoadRunnerHttp/data_collector/roadrunner_http.html.twig',

@@ -116,8 +116,6 @@ A class-level attribute applies to every routed action on the controller. On a m
 
 Global middleware runs first, in configuration order. Scoped middleware wraps the controller call after routing, request listeners, and argument resolution have run. Higher priorities run first. The default is `0`. At equal priority, class bindings run before method bindings, and bindings on the same target follow declaration order.
 
-When a request listener calls `Request::initialize()` or replaces the request's attribute bag, carry over the existing attributes so the request keeps its middleware and profiler context.
-
 When a scoped service ID appears more than once, the route-specific binding takes precedence, followed by the action binding and then the class binding. Among bindings in the same scope, the highest priority wins. If priorities are equal, the first declaration wins. A service registered both globally and in a scope can run in both places.
 
 Pass the same Symfony request instance to `$next($request)` that the scoped middleware received. If middleware returns a response without calling `$next`, the rest of the chain and the controller are skipped.

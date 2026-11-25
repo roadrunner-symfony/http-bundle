@@ -20,6 +20,7 @@ use Roadrunner\Integration\Symfony\Http\Middleware\MiddlewareTrace;
 use Roadrunner\Integration\Symfony\Http\Middleware\PipelineMiddleware;
 use Roadrunner\Integration\Symfony\Http\Middleware\ScopedMiddlewareResolver;
 use Roadrunner\Integration\Symfony\Http\Middleware\ScopedMiddlewareSubscriber;
+use Roadrunner\Integration\Symfony\Http\Middleware\WorkerRequestRegistry;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -40,6 +41,8 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 final class ScopedMiddlewareSubscriberTest extends TestCase
 {
+    private WorkerRequestRegistry $workerRequestRegistry;
+
     public function testUsesSymfonyViewAndResponseLifecycle(): void
     {
         $views         = 0;
@@ -99,25 +102,18 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         $dispatcher = new EventDispatcher();
         $kernel     = $this->kernel($dispatcher);
         $request    = $this->request();
-        $attributes = $request->attributes;
-        $key        = '_roadrunner_http_worker';
-        $attributes->set($key, null);
 
-        $dispatcher->addListener(KernelEvents::REQUEST, static function (RequestEvent $event): void {
+        $workerRequestRegistry = $this->workerRequestRegistry;
+        $dispatcher->addListener(KernelEvents::REQUEST, static function (RequestEvent $event) use ($workerRequestRegistry): void {
             $current = $event->getRequest();
-            $current->initialize(attributes: $current->attributes->all());
-            self::assertNotNull(PipelineMiddleware::workerRequest($current));
+            self::assertTrue($workerRequestRegistry->isActive($current));
         });
 
         try {
             $this->pipeline($kernel)->process($request);
             self::fail('Expected controller result to require a view response.');
         } catch (ControllerDoesNotReturnResponseException) {
-            self::assertNull(PipelineMiddleware::workerRequest($request));
-            self::assertTrue($attributes->has($key));
-            self::assertNull($attributes->get($key));
-            self::assertTrue($request->attributes->has($key));
-            self::assertNull($request->attributes->get($key));
+            self::assertFalse($this->workerRequestRegistry->isActive($request));
         }
     }
 
@@ -126,7 +122,7 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         $dispatcher = new EventDispatcher();
         $stack      = new RequestStack();
         $kernel     = $this->kernel($dispatcher, $stack);
-        $collector  = new RoadRunnerHttpCollector($stack);
+        $collector  = new RoadRunnerHttpCollector($stack, $this->workerRequestRegistry);
         $profiled   = [];
 
         $dispatcher->addListener(KernelEvents::RESPONSE, static function (ResponseEvent $event) use ($collector, &$profiled): void {
@@ -136,25 +132,34 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         $dispatcher->addListener(KernelEvents::VIEW, static function (ViewEvent $event): void {
             $event->setResponse(new JsonResponse($event->getControllerResult()));
         });
-        $dispatcher->addListener(KernelEvents::REQUEST, static function (RequestEvent $event) use ($kernel): void {
+        $workerRequestRegistry = $this->workerRequestRegistry;
+        $dispatcher->addListener(KernelEvents::REQUEST, static function (RequestEvent $event) use ($kernel, $workerRequestRegistry): void {
             $request = $event->getRequest();
 
-            if (null !== PipelineMiddleware::workerRequest($request)) {
-                $copy = $request->duplicate();
-                self::assertNull(PipelineMiddleware::workerRequest($copy));
-                self::assertFalse($kernel->handle($copy)->headers->has('X-Scoped'));
+            if (!$workerRequestRegistry->isActive($request)) {
+                return;
             }
+
+            $copy = $request->duplicate();
+            self::assertFalse($workerRequestRegistry->isActive($copy));
+            self::assertFalse($kernel->handle($copy)->headers->has('X-Scoped'));
+
+            $request->initialize(attributes: [
+                '_controller' => $request->attributes->get('_controller'),
+                '_route'      => $request->attributes->get('_route'),
+                'original'    => $request->attributes->get('original'),
+            ]);
         });
 
-        $global = new class($kernel) implements Middleware {
-            public function __construct(private readonly HttpKernel $kernel) {}
+        $global = new class($kernel, $workerRequestRegistry) implements Middleware {
+            public function __construct(private readonly HttpKernel $kernel, private readonly WorkerRequestRegistry $workerRequestRegistry) {}
 
             public function process(Request $request, callable $next): Response
             {
                 Assert::assertFalse($this->kernel->handle($request->duplicate())->headers->has('X-Scoped'));
                 $replacement = $request->duplicate();
                 $response    = $next($replacement);
-                Assert::assertNull(PipelineMiddleware::workerRequest($replacement));
+                Assert::assertFalse($this->workerRequestRegistry->isActive($replacement));
 
                 return $response;
             }
@@ -176,6 +181,26 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         return ['original' => $request->attributes->getBoolean('original')];
     }
 
+    public function testPreservesApplicationAttributeUsedAsControllerArgument(): void
+    {
+        $kernel  = $this->kernel(new EventDispatcher());
+        $request = $this->request();
+        $request->attributes->set('_controller', [$this, 'controllerWithApplicationAttribute']);
+        $request->attributes->set('_roadrunner_http_worker', 'application value');
+
+        $response = $this->pipeline($kernel)->process($request);
+
+        self::assertSame('application value', $response->getContent());
+        self::assertSame('entered', $response->headers->get('X-Scoped'));
+        self::assertSame('application value', $request->attributes->get('_roadrunner_http_worker'));
+    }
+
+    #[UseMiddleware('test.middleware')]
+    public function controllerWithApplicationAttribute(string $_roadrunner_http_worker): Response
+    {
+        return new Response($_roadrunner_http_worker);
+    }
+
     private function kernel(EventDispatcher $dispatcher, ?RequestStack $stack = null): HttpKernel
     {
         $middleware = new class implements Middleware {
@@ -188,9 +213,11 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
             }
         };
         $resolver = new ScopedMiddlewareResolver(new ServiceLocator(['test.middleware' => static fn(): Middleware => $middleware]));
-        $dispatcher->addSubscriber(new ScopedMiddlewareSubscriber($resolver, $dispatcher));
+        $stack ??= new RequestStack();
+        $this->workerRequestRegistry = new WorkerRequestRegistry();
+        $dispatcher->addSubscriber(new ScopedMiddlewareSubscriber($resolver, $dispatcher, $this->workerRequestRegistry));
 
-        return new HttpKernel($dispatcher, new ControllerResolver(), $stack ?? new RequestStack(), new ArgumentResolver());
+        return new HttpKernel($dispatcher, new ControllerResolver(), $stack, new ArgumentResolver());
     }
 
     /**
@@ -202,7 +229,7 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         $adapter = $this->createMock(KernelInterface::class);
         $adapter->method('handle')->willReturnCallback($kernel->handle(...));
 
-        return new PipelineMiddleware($adapter, $middlewares, $ids);
+        return new PipelineMiddleware($adapter, $middlewares, $ids, $this->workerRequestRegistry);
     }
 
     private function request(): Request

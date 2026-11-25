@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Roadrunner\Integration\Symfony\Http\DataCollector\RoadRunnerHttpCollector;
 use Roadrunner\Integration\Symfony\Http\Middleware\MiddlewareTrace;
 use Roadrunner\Integration\Symfony\Http\Middleware\PipelineMiddleware;
+use Roadrunner\Integration\Symfony\Http\Middleware\WorkerRequestRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,12 +25,13 @@ final class RoadRunnerHttpCollectorTest extends TestCase
 {
     public function testDistinguishesEmptyWorkerTraceFromOtherRequests(): void
     {
-        $stack     = new RequestStack();
-        $collector = new RoadRunnerHttpCollector($stack);
-        $request   = new Request();
-        $response  = new Response();
-        $trace     = new MiddlewareTrace();
-        $kernel    = $this->createMock(KernelInterface::class);
+        $stack                 = new RequestStack();
+        $workerRequestRegistry = new WorkerRequestRegistry();
+        $collector             = new RoadRunnerHttpCollector($stack, $workerRequestRegistry);
+        $request               = new Request();
+        $response              = new Response();
+        $trace                 = new MiddlewareTrace();
+        $kernel                = $this->createMock(KernelInterface::class);
         $kernel->expects(self::once())->method('handle')->willReturnCallback(
             static function (Request $current) use ($stack, $collector, $response): Response {
                 $stack->push($current);
@@ -46,7 +48,7 @@ final class RoadRunnerHttpCollectorTest extends TestCase
             },
         );
 
-        (new PipelineMiddleware($kernel, []))->process($request, $trace);
+        (new PipelineMiddleware($kernel, [], workerRequestRegistry: $workerRequestRegistry))->process($request, $trace);
         $profileCollector = clone $collector;
         $stack->push($request);
         $collector->collect($request, $response);

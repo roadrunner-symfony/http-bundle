@@ -27,6 +27,7 @@ final class ScopedMiddlewareSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly ScopedMiddlewareResolver $resolver,
         private readonly EventDispatcherInterface $dispatcher,
+        private readonly WorkerRequestRegistry $workerRequestRegistry,
     ) {}
 
     public static function getSubscribedEvents(): array
@@ -42,13 +43,12 @@ final class ScopedMiddlewareSubscriber implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
-        $worker  = PipelineMiddleware::workerRequest($request);
 
-        if (null === $worker) {
+        if (!$this->workerRequestRegistry->isActive($request)) {
             return;
         }
 
-        $trace      = $worker['trace'];
+        $trace      = $this->workerRequestRegistry->traceFor($request);
         $route      = $request->attributes->get('_route');
         $controller = $event->getController();
         $target     = $this->resolver->describeController($controller);

@@ -54,7 +54,6 @@ final class ScopedMiddlewareCompilerPass implements CompilerPass
         $container->getDefinition('roadrunner.http.scoped_resolver')
             ->setArgument(0, ServiceLocatorTagPass::register($container, $services))
         ;
-        $container->log($this, sprintf('[FIX] Registered %d scoped middleware IDs from optimized service definitions.', count($services)));
 
         if (!$container->has('router') || !interface_exists(RouterInterface::class) || !class_exists(Command::class)) {
             return;
