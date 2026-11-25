@@ -61,7 +61,9 @@ final class ScopedMiddlewareResolverTest extends TestCase
 
     private function resolver(): ScopedMiddlewareResolver
     {
-        $factory = static fn(): never => throw new LogicException('Inspection must be lazy.');
+        $factory = static function (): never {
+            throw new LogicException('Inspection must be lazy.');
+        };
 
         return new ScopedMiddlewareResolver(new ServiceLocator(array_fill_keys(['base', 'duplicate', 'action'], $factory)));
     }

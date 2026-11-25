@@ -16,6 +16,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
+use Symfony\Component\HttpKernel\Event\ControllerArgumentsMetadata;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\Exception\ControllerDoesNotReturnResponseException;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -61,7 +62,9 @@ final class ScopedMiddlewareSubscriber implements EventSubscriberInterface
             return;
         }
 
+        // Symfony 8.1 clears the shared request attribute cache when the new event is created.
         $arguments     = $event->getArguments();
+        $attributes    = class_exists(ControllerArgumentsMetadata::class) ? $event->getAttributes('*') : null;
         $originalEvent = new ControllerArgumentsEvent(
             $event->getKernel(),
             $controller,
@@ -70,8 +73,9 @@ final class ScopedMiddlewareSubscriber implements EventSubscriberInterface
             $event->getRequestType(),
         );
 
-        // Controller attribute metadata is available from Symfony 6.2 onward.
-        if (method_exists($event, 'getAttributes')) { // @phpstan-ignore function.alreadyNarrowedType
+        $hasAttributes = method_exists($event, 'getAttributes'); // @phpstan-ignore function.alreadyNarrowedType (Symfony 6.0 compatibility)
+
+        if (null === $attributes && $hasAttributes) {
             $originalEvent->setController($controller, $event->getAttributes());
         }
 
@@ -118,7 +122,7 @@ final class ScopedMiddlewareSubscriber implements EventSubscriberInterface
             };
         }
 
-        $event->setController(static fn(): Response => $next($request));
+        $event->setController(static fn(): Response => $next($request), $attributes);
         $event->setArguments([]);
     }
 }

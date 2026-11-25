@@ -28,6 +28,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
+use Symfony\Component\HttpKernel\Event\ControllerArgumentsMetadata;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -40,11 +42,29 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
 {
     public function testUsesSymfonyViewAndResponseLifecycle(): void
     {
-        $views      = 0;
-        $responses  = 0;
-        $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(KernelEvents::VIEW, static function (ViewEvent $event) use (&$views): void {
+        $views         = 0;
+        $responses     = 0;
+        $dispatcher    = new EventDispatcher();
+        $attribute     = new UseMiddleware('test.middleware', priority: 100);
+        $hasAttributes = method_exists(ControllerArgumentsEvent::class, 'getAttributes');
+
+        if ($hasAttributes) {
+            $dispatcher->addListener(KernelEvents::CONTROLLER_ARGUMENTS, static function (ControllerArgumentsEvent $event) use ($attribute): void {
+                $attributes = class_exists(ControllerArgumentsMetadata::class) ? [$attribute] : [UseMiddleware::class => [$attribute]];
+                $event->setController($event->getController(), $attributes);
+            });
+        }
+
+        $dispatcher->addListener(KernelEvents::VIEW, static function (ViewEvent $event) use (&$views, $attribute, $hasAttributes): void {
             ++$views;
+
+            if ($hasAttributes) {
+                $metadata = $event->controllerMetadata ?? $event->controllerArgumentsEvent ?? null;
+                self::assertNotNull($metadata);
+                self::assertSame([$attribute], $metadata->getAttributes(UseMiddleware::class));
+                self::assertSame($event->getRequest(), $metadata->getNamedArguments()['request']);
+            }
+
             $event->setResponse(new JsonResponse($event->getControllerResult()));
         });
         $dispatcher->addListener(KernelEvents::RESPONSE, static function () use (&$responses): void {
