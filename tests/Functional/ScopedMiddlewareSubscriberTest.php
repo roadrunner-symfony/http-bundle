@@ -55,6 +55,10 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
             });
         }
 
+        $dispatcher->addListener(KernelEvents::CONTROLLER_ARGUMENTS, static function (ControllerArgumentsEvent $event): void {
+            self::assertSame([$event->getRequest()], $event->getArguments());
+        }, -10000);
+
         $dispatcher->addListener(KernelEvents::VIEW, static function (ViewEvent $event) use (&$views, $attribute, $hasAttributes): void {
             ++$views;
 
@@ -71,7 +75,7 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
             ++$responses;
         });
         $kernel   = $this->kernel($dispatcher);
-        $response = $this->pipeline($kernel)->processWorkerRequest($this->request(), null);
+        $response = $this->pipeline($kernel)->process($this->request());
         self::assertSame('{"original":true}', $response->getContent());
         self::assertSame('entered', $response->headers->get('X-Scoped'));
         self::assertSame(1, $views);
@@ -86,7 +90,7 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         $request = $this->request();
         $request->attributes->remove('_route');
         $request->attributes->set('_canonical_route', 'example');
-        $response = $this->pipeline($kernel)->processWorkerRequest($request, null);
+        $response = $this->pipeline($kernel)->process($request);
         self::assertFalse($response->headers->has('X-Scoped'));
     }
 
@@ -95,14 +99,25 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         $dispatcher = new EventDispatcher();
         $kernel     = $this->kernel($dispatcher);
         $request    = $this->request();
-        $request->attributes->set('_roadrunner_http_worker', null);
+        $attributes = $request->attributes;
+        $key        = '_roadrunner_http_worker';
+        $attributes->set($key, null);
+
+        $dispatcher->addListener(KernelEvents::REQUEST, static function (RequestEvent $event): void {
+            $current = $event->getRequest();
+            $current->initialize(attributes: $current->attributes->all());
+            self::assertNotNull(PipelineMiddleware::workerRequest($current));
+        });
 
         try {
-            $this->pipeline($kernel)->processWorkerRequest($request, null);
+            $this->pipeline($kernel)->process($request);
             self::fail('Expected controller result to require a view response.');
         } catch (ControllerDoesNotReturnResponseException) {
-            self::assertTrue($request->attributes->has('_roadrunner_http_worker'));
             self::assertNull(PipelineMiddleware::workerRequest($request));
+            self::assertTrue($attributes->has($key));
+            self::assertNull($attributes->get($key));
+            self::assertTrue($request->attributes->has($key));
+            self::assertNull($request->attributes->get($key));
         }
     }
 
@@ -147,7 +162,7 @@ final class ScopedMiddlewareSubscriberTest extends TestCase
         $trace    = new MiddlewareTrace();
         $pipeline = $this->pipeline($kernel, [$global], ['test.global']);
 
-        self::assertSame('entered', $pipeline->processWorkerRequest($this->request(), $trace)->headers->get('X-Scoped'));
+        self::assertSame('entered', $pipeline->process($this->request(), $trace)->headers->get('X-Scoped'));
         self::assertSame([
             ['id' => 'test.global', 'scope' => 'global'],
             ['id' => 'test.middleware', 'scope' => 'action'],

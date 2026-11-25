@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface as Kernel;
 use Throwable;
-use WeakReference;
 
 final class PipelineMiddleware
 {
@@ -32,33 +31,32 @@ final class PipelineMiddleware
     ) {}
 
     /** @throws Throwable */
-    public function process(Request $request): Response
-    {
-        return $this->dispatch($request, $this->kernel->handle(...), null);
-    }
-
-    /** @internal */
-    public function processWorkerRequest(Request $request, ?MiddlewareTrace $trace): Response
+    public function process(Request $request, ?MiddlewareTrace $trace = null): Response
     {
         return $this->dispatch($request, function (Request $forwarded) use ($trace): Response {
             $attributes = $forwarded->attributes;
             $key        = self::WORKER_REQUEST_ATTRIBUTE;
             $present    = $attributes->has($key);
             $previous   = $attributes->get($key);
-
-            $attributes->set($key, [
-                'request' => WeakReference::create($forwarded),
-                'trace'   => null === $trace ? null : WeakReference::create($trace),
-            ]);
+            $context    = new WorkerRequestContext($forwarded, $trace);
+            $attributes->set($key, $context);
 
             try {
                 return $this->kernel->handle($forwarded);
             } finally {
-                // Request::initialize() may have replaced the attribute bag during handling.
-                if ($present) {
-                    $forwarded->attributes->set($key, $previous);
-                } else {
-                    $forwarded->attributes->remove($key);
+                // Copies of the request may still hold this context.
+                $context->clear();
+
+                foreach ([$attributes, $forwarded->attributes] as $bag) {
+                    if ($bag->get($key) !== $context) {
+                        continue;
+                    }
+
+                    if ($present) {
+                        $bag->set($key, $previous);
+                    } else {
+                        $bag->remove($key);
+                    }
                 }
             }
         }, $trace);
@@ -70,16 +68,9 @@ final class PipelineMiddleware
      */
     public static function workerRequest(Request $request): ?array
     {
-        $marker = $request->attributes->get(self::WORKER_REQUEST_ATTRIBUTE);
+        $context = $request->attributes->get(self::WORKER_REQUEST_ATTRIBUTE);
 
-        if (!is_array($marker) || !(($marker['request'] ?? null) instanceof WeakReference) || $marker['request']->get() !== $request) {
-            return null;
-        }
-
-        $reference = $marker['trace'] ?? null;
-        $trace     = $reference instanceof WeakReference ? $reference->get() : null;
-
-        return ['trace' => $trace instanceof MiddlewareTrace ? $trace : null];
+        return $context instanceof WorkerRequestContext ? $context->forRequest($request) : null;
     }
 
     /** @param callable(Request): Response $next */

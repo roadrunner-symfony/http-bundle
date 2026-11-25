@@ -19,15 +19,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\DataCollector\DataCollector;
 use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use Throwable;
-use WeakReference;
 
 final class RoadRunnerHttpCollector extends DataCollector implements LateDataCollectorInterface
 {
     public const NAME       = 'roadrunner_http';
     public const SERVICE_ID = 'roadrunner.http.data_collector';
 
-    /** @var WeakReference<MiddlewareTrace>|null */
-    private ?WeakReference $trace = null;
+    private ?MiddlewareTrace $trace = null;
 
     public function __construct(
         private readonly RequestStack $requests,
@@ -39,7 +37,7 @@ final class RoadRunnerHttpCollector extends DataCollector implements LateDataCol
             ? (PipelineMiddleware::workerRequest($request)['trace'] ?? null)
             : null;
 
-        $this->trace = null === $trace ? null : WeakReference::create($trace);
+        $this->trace = $trace;
         $this->data  = [
             'active'  => null !== $trace,
             'entries' => $trace?->entries() ?? [],
@@ -48,7 +46,7 @@ final class RoadRunnerHttpCollector extends DataCollector implements LateDataCol
 
     public function lateCollect(): void
     {
-        if (null !== $trace = $this->trace?->get()) {
+        if (null !== $trace = $this->trace) {
             $this->data['entries'] = $trace->entries();
             $this->trace           = null;
         }

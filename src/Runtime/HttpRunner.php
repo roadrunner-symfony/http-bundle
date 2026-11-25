@@ -75,7 +75,7 @@ final class HttpRunner implements Runner
         $trace = $this->traceMiddleware ? new MiddlewareTrace() : null;
 
         try {
-            $response = $this->pipeline->processWorkerRequest($request, $trace);
+            $response = $this->pipeline->process($request, $trace);
         } catch (Throwable $e) {
             try {
                 $this->worker->respondThrowable($e);

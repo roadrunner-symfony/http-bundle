@@ -46,7 +46,7 @@ final class RoadRunnerHttpCollectorTest extends TestCase
             },
         );
 
-        (new PipelineMiddleware($kernel, []))->processWorkerRequest($request, $trace);
+        (new PipelineMiddleware($kernel, []))->process($request, $trace);
         $profileCollector = clone $collector;
         $stack->push($request);
         $collector->collect($request, $response);

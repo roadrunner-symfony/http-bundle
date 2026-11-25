@@ -31,7 +31,8 @@ final class ScopedMiddlewareSubscriber implements EventSubscriberInterface
 
     public static function getSubscribedEvents(): array
     {
-        return [KernelEvents::CONTROLLER_ARGUMENTS => ['onControllerArguments', -1024]];
+        // Symfony 8.1 evaluates controller attributes at priority -10000.
+        return [KernelEvents::CONTROLLER_ARGUMENTS => ['onControllerArguments', -10001]];
     }
 
     public function onControllerArguments(ControllerArgumentsEvent $event): void
