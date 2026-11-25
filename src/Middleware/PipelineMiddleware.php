@@ -20,24 +20,39 @@ final class PipelineMiddleware
 {
     /**
      * @param array<int, Middleware> $middlewares
+     * @param array<int, string> $middlewareIds
      */
     public function __construct(
         private readonly Kernel $kernel,
         private readonly array $middlewares,
+        private readonly array $middlewareIds = [],
+        private readonly ?WorkerRequestRegistry $workerRequestRegistry = null,
     ) {}
 
-    /**
-     * @throws Throwable
-     */
-    public function process(Request $request): Response
+    /** @throws Throwable */
+    public function process(Request $request, ?MiddlewareTrace $trace = null): Response
     {
-        $middlewares = $this->middlewares;
-        $middleware  = array_shift($middlewares);
+        $handle                = $this->kernel->handle(...);
+        $workerRequestRegistry = $this->workerRequestRegistry;
 
-        if (null == $middleware) {
-            return $this->kernel->handle($request);
+        $next = null === $workerRequestRegistry
+            ? $handle
+            : static fn(Request $forwarded): Response => $workerRequestRegistry->duringHandle($forwarded, $trace, $handle);
+
+        return $this->dispatch($request, $next, $trace);
+    }
+
+    /** @param callable(Request): Response $next */
+    private function dispatch(Request $request, callable $next, ?MiddlewareTrace $trace): Response
+    {
+        foreach (array_reverse($this->middlewares, true) as $index => $middleware) {
+            $next = function (Request $current) use ($middleware, $index, $next, $trace): Response {
+                $trace?->record($this->middlewareIds[$index] ?? $middleware::class, 'global');
+
+                return $middleware->process($current, $next);
+            };
         }
 
-        return $middleware->process($request, [new self($this->kernel, $middlewares), 'process']);
+        return $next($request);
     }
 }

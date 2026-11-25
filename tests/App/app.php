@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Symfony RoadRunner Http
+ *
+ * @author    Vlad Shashkov <shashkov.root@gmail.com>
+ * @copyright Copyright (c) 2026, The RoadRunner community
+ */
 
 declare(strict_types=1);
 
@@ -9,11 +15,16 @@ use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\StreamedResponse;
 
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\reference;
 
+use Roadrunner\Integration\Symfony\Http\InstalledVersions;
 use Roadrunner\Integration\Symfony\Http\RoadRunnerHttpBundle;
+use Roadrunner\Integration\Symfony\Http\Test\App\MiddlewareController;
+use Roadrunner\Integration\Symfony\Http\Test\App\MiddlewareFixture;
 use Sentry\SentryBundle\SentryBundle;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Bundle\TwigBundle\TwigBundle;
+use Symfony\Bundle\WebProfilerBundle\WebProfilerBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -29,6 +40,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse as SymfonyStreamedResponse
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 require __DIR__ . '/../../vendor/autoload_runtime.php';
 
@@ -37,7 +49,9 @@ require __DIR__ . '/../../vendor/autoload_runtime.php';
  */
 final class Kernel extends BaseKernel
 {
-    use MicroKernelTrait;
+    use MicroKernelTrait {
+        configureRoutes as private configureDefaultRoutes;
+    }
 
     public function registerBundles(): array
     {
@@ -45,14 +59,32 @@ final class Kernel extends BaseKernel
             new FrameworkBundle(),
             new RoadRunnerHttpBundle(),
             new SentryBundle(),
+            ...('plain' !== $this->environment ? [new TwigBundle(), new WebProfilerBundle()] : []),
         ];
     }
 
     protected function configureContainer(ContainerConfigurator $container, LoaderInterface $loader, ContainerBuilder $builder): void
     {
         $container->extension('framework', [
-            'secret' => 'S0ME_SECRET',
+            'secret'   => 'S0ME_SECRET',
+            'profiler' => ['enabled' => 'plain' !== $this->environment],
         ]);
+
+        InstalledVersions::setHandler(static fn(string $package, string $class, array $parents): bool => 'sentry/sentry-symfony' === $package || ContainerBuilder::willBeAvailable($package, $class, $parents));
+        $container->extension('road_runner_http', [
+            'middlewares'          => ['fixture.global'],
+            'useSentryIntegration' => true,
+        ]);
+
+        foreach (['global', 'class', 'action', 'route'] as $scope) {
+            $container->services()->set('fixture.' . $scope, MiddlewareFixture::class)
+                ->args([$scope])
+                ->autoconfigure()
+            ;
+        }
+
+        $container->services()->alias('fixture.route_alias', 'fixture.route');
+        $container->services()->set(MiddlewareController::class)->public();
 
         $container->parameters()
             ->set('.container.dumper.inline_factories', true)
@@ -74,6 +106,20 @@ final class Kernel extends BaseKernel
         });
     }
 
+
+    protected function configureRoutes(RoutingConfigurator $routes): void
+    {
+        $this->configureDefaultRoutes($routes);
+        $routes->import(__DIR__ . '/MiddlewareController.php', 'attribute');
+
+        if ('plain' !== $this->environment) {
+            $routingDirectory = 'Resources/config/routing';
+            $extension        = is_file((new WebProfilerBundle())->getPath() . '/' . $routingDirectory . '/profiler.php') ? 'php' : 'xml';
+
+            $routes->import('@WebProfilerBundle/' . $routingDirectory . '/profiler.' . $extension)->prefix('/_profiler');
+            $routes->import('@WebProfilerBundle/' . $routingDirectory . '/wdt.' . $extension)->prefix('/_wdt');
+        }
+    }
 
     #[Route(path: '/acceptTextRequest', defaults: ['_format' => 'json'], methods: [Request::METHOD_POST], format: 'json')]
     public function acceptTextRequest(Request $request): Response

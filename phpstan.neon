@@ -14,3 +14,4 @@ parameters:
 
 	stubFiles:
 	    - stubs/codeception/Example.php
+	    - stubs/symfony/ControllerArgumentsEvent.php

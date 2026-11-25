@@ -14,8 +14,11 @@ namespace Roadrunner\Integration\Symfony\Http;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\DoctrineCompilerPass;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\PipelineMiddlewareCompilerPass;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\RunnerCompilerPass;
+use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\ScopedMiddlewareCompilerPass;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\SentryCompilerPass;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler\VarDumperCompilerPass;
+use Roadrunner\Integration\Symfony\Http\Middleware\Middleware;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -27,7 +30,10 @@ final class RoadRunnerHttpBundle extends Bundle
         $container->addCompilerPass(new DoctrineCompilerPass());
         $container->addCompilerPass(new SentryCompilerPass());
         $container->addCompilerPass(new VarDumperCompilerPass());
-        $container->addCompilerPass(new PipelineMiddlewareCompilerPass());
+
+        $container->registerForAutoconfiguration(Middleware::class)->addTag(ScopedMiddlewareCompilerPass::TAG);
+        $container->addCompilerPass(new ScopedMiddlewareCompilerPass(), PassConfig::TYPE_BEFORE_REMOVING, priority: 10);
+        $container->addCompilerPass(new PipelineMiddlewareCompilerPass(), priority: -20);
     }
 
     public function getPath(): string

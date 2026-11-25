@@ -13,6 +13,7 @@ namespace Roadrunner\Integration\Symfony\Http\DependencyInjection\Compiler;
 
 use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\AmpStreamedResponseConverter;
 use Roadrunner\Integration\Symfony\Http\Bridge\HttpFoundation\FiberStreamedResponseConverter;
+use Roadrunner\Integration\Symfony\Http\DataCollector\RoadRunnerHttpCollector;
 use Roadrunner\Integration\Symfony\Http\DependencyInjection\Configuration;
 
 use function Roadrunner\Integration\Symfony\Http\DependencyInjection\definition;
@@ -69,6 +70,7 @@ final class RunnerCompilerPass implements CompilerPass
                     new Reference('event_dispatcher'),
                 ]),
                 new Reference('roadrunner.http.pipeline_middleware'),
+                $container->hasDefinition('profiler') && $container->hasDefinition(RoadRunnerHttpCollector::SERVICE_ID),
             ])
             ->setPublic(true)
         ;
