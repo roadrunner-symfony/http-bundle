@@ -105,7 +105,11 @@ class StreamedJsonResponse extends StreamedResponse
             if (is_object($item)) {
                 $generators[] = $item;
                 $item         = self::PLACEHOLDER;
-            } elseif (self::PLACEHOLDER === $item) {
+
+                return;
+            }
+
+            if (self::PLACEHOLDER === $item) {
                 // if the placeholder is already in the structure it should be replaced with a new one that explode
                 // works like expected for the structure
                 $generators[] = $item;
@@ -147,9 +151,7 @@ class StreamedJsonResponse extends StreamedResponse
                 // depending on the first elements key the generator is detected as a list or map
                 // we can not check for a whole list or map because that would hurt the performance
                 // of the streamed response which is the main goal of this response class
-                if (0 !== $key) {
-                    $startTag = '{';
-                }
+                $startTag = 0 === $key ? '[' : '{';
 
                 yield $startTag;
             } else {

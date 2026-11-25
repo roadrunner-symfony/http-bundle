@@ -20,17 +20,18 @@ final class HttpRuntime extends SymfonyRuntime
 {
     public function getRunner(?object $application): Runner
     {
-        if ($application instanceof Kernel) {
-            $application->boot();
-
-            $runner = $application->getContainer()->get('roadrunner.http.runner');
-
-            if ($runner instanceof HttpRunner) {
-                return $runner;
-            }
-
+        if (!$application instanceof Kernel) {
+            throw new LogicException('Is not a http roadrunner runtime');
         }
 
-        throw new LogicException('Is not a http roadrunner runtime');
+        $application->boot();
+
+        $runner = $application->getContainer()->get('roadrunner.http.runner');
+
+        if (!$runner instanceof HttpRunner) {
+            throw new LogicException('Is not a http roadrunner runtime');
+        }
+
+        return $runner;
     }
 }

@@ -97,6 +97,48 @@ road_runner_http:
 ```
 
 
+## Route and controller middleware
+
+Register middleware as a Symfony service implementing `Roadrunner\Integration\Symfony\Http\Middleware\Middleware`. Enable service autoconfiguration or add the `roadrunner.http.middleware` tag. Private services and configured aliases can be used by service ID.
+
+```php
+use Roadrunner\Integration\Symfony\Http\Middleware\Attribute\UseMiddleware;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[UseMiddleware(ControllerMiddleware::class, priority: 10)]
+final class OrderController
+{
+    #[Route('/orders', name: 'orders_list')]
+    #[UseMiddleware(ListMiddleware::class)]
+    public function list(): Response
+    {
+        // ...
+    }
+
+    #[Route('/orders/{id}', name: 'orders_show')]
+    #[Route('/orders/{id}/preview', name: 'orders_preview')]
+    #[UseMiddleware(PreviewMiddleware::class, priority: 20, route: 'orders_preview')]
+    public function show(int $id): Response
+    {
+        // ...
+    }
+}
+```
+
+The class attribute applies to every routed action on that controller. An action attribute applies to every route on that method unless it supplies an exact `route` name. For localized routes, use the canonical name.
+
+Global middleware runs first in configured order. The scoped chain starts at controller invocation, after routing, request listeners, and argument resolution. Higher scoped priorities run first (default `0`). At equal priority, class bindings precede method bindings, then declaration order breaks ties. For repeated scoped service IDs, the route-specific binding wins over the action binding, which wins over the class binding. Within the same scope, the highest priority wins, then the first declaration. A service configured globally and scoped can run in both places.
+
+Call `$next($request)` with the same Symfony Request received by scoped middleware. Returning a response directly skips the rest of the chain and the controller.
+
+```bash
+bin/console debug:middleware
+bin/console debug:middleware orders_preview
+```
+
+The command shows the configured chain in entry order, including global middleware registered by integrations. With Symfony Web Profiler enabled, the **RoadRunner HTTP** panel shows the middleware actually invoked for the profiled worker request, including an empty chain. A response returned by global middleware before the Symfony kernel starts has no native Symfony profile.
+
 ## Streamed Response
 
 

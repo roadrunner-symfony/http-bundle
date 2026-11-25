@@ -27,13 +27,12 @@ final class PipelineMiddlewareCompilerPass implements CompilerPass
         /** @var RawConfiguration $config */
         $config = $container->getParameter(RoadRunnerHttpExtension::CONFIG_NAME);
 
-        $middlewares = array_map(
-            static fn(string $id): Reference => new Reference($id),
-            $config['middlewares']
-        );
+        $ids         = array_values($config['middlewares']);
+        $middlewares = array_map(static fn(string $id): Reference => new Reference($id), $ids);
 
         $container->getDefinition('roadrunner.http.pipeline_middleware')
             ->replaceArgument(1, $middlewares)
+            ->setArgument(2, $ids)
         ;
     }
 }
